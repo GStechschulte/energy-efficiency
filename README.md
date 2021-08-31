@@ -22,6 +22,10 @@ Code, works in progress, and supplemental information related to my master's the
     - Rather than focusing on equipment status, we focus on identifying factors such as workers’ behavior and working conditions using IoT sensors to improve quality and productivity. 
     - via [Development of Industrial IoT System for Anomaly Detection in Smart Factory | IEEE DataPort](https://ieee-dataport.org/documents/development-industrial-iot-system-anomaly-detection-smart-factory)
 
+- Industrial Machines for Electrical Load Disaggregation - Contains heavy-machinery data from the Brazilian industrial sector
+    - via [Industrial Machines Dataset for Electrical Load Disaggregation | IEEE DataPort](https://ieee-dataport.org/open-access/industrial-machines-dataset-electrical-load-disaggregation)____ 
+
+
 **Mobility**
 
 - One year half hourly profiles of demand, PV generation, and EV charging for a household in London, UK
