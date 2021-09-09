@@ -24,7 +24,7 @@ Code, works in progress, and supplemental information related to my master's the
     - via [Industrial Machines Dataset for Electrical Load Disaggregation | IEEE DataPort](https://ieee-dataport.org/open-access/industrial-machines-dataset-electrical-load-disaggregation)
 
 - Smart Energy Data from Aachen / Cologne Smart Factory - This data set provides energy consumption profiles of a smart factory and four of its machines at FINESCE [trial site Aachen / Cologne](http://www finesce.eu/Trial_Site_Aachen.html)
-    — via [Smart Energy Data: Aachen/ Cologne Smart Factory - Datasets - FIWARE Lab Data Portal](https://data.lab.fiware.org/dataset/smart_energy_data-_aachen__cologne_smart_factory)
+    - via [Smart Energy Data: Aachen/ Cologne Smart Factory - Datasets - FIWARE Lab Data Portal](https://data.lab.fiware.org/dataset/smart_energy_data-_aachen__cologne_smart_factory)
 
 
 - Development of Industrial IoT System for Anomoly Detection in Smart Factories
