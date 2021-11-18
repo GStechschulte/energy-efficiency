@@ -4,13 +4,7 @@ Code, works in progress, and supplemental information related to my master's the
 
 ## Directories
 
-[benchmark](benchmark/) - . . .
-
-[equipment-state](equipment-state/) - . . .
-
-[models](models/) - . . .
-
-[preprocessing](preprocessing/) - . . .
+[sample-analysis](sample-analysis/) - . . .
 
 ## Open Datasets
 
