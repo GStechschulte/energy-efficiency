@@ -4,7 +4,7 @@ Code, works in progress, and supplemental information related to my master's the
 
 ## Directories
 
-[sample-analysis](sample-analysis/) - . . .
+[load_profiles](load_profiles/) - Exploratory analysis and visualization of load profiles at different time resolutions
 
 ## Open Datasets
 
