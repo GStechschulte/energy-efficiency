@@ -4,13 +4,7 @@ Code, works in progress, and supplemental information related to my master's the
 
 ## Directories
 
-[benchmark](benchmark/) - . . .
-
-[equipment-state](equipment-state/) - . . .
-
-[models](models/) - . . .
-
-[preprocessing](preprocessing/) - . . .
+[load_profiles](load_profiles/) - Exploratory analysis and visualization of load profiles at different time resolutions
 
 ## Open Datasets
 
