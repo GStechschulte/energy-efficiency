@@ -2,6 +2,7 @@ import configparser
 import os
 import psycopg2
 import pandas as pd
+from sqlalchemy import create_engine
 
 # Set variables
 config = None
@@ -23,7 +24,7 @@ def get_config():
 
     return config
 
-def get_db_connection():
+def get_db_connection(engine=False):
     """
     if conn is None, return conn
     else connect to db
@@ -33,6 +34,16 @@ def get_db_connection():
 
     if conn is not None:
         return conn
+    elif engine == True:
+        config = get_config()
+        engine = create_engine(
+            'postgresql+psycopg2://{}:{}@{}/{postgres}'.format(
+            config['DB']['USER'],
+            config['DB']['PASSWORD'],
+            config['DB']['HOST'],
+            config['DB']['DATABASE']
+            )
+        )
     else:
         config = get_config()
         conn = psycopg2.connect(
@@ -92,7 +103,7 @@ def calculate_kilowatt():
         create materialized view gassmann.{}_kw as
         (select
             k."t",
-            sum(k.kw) as kw
+            avg(k.kw) as avg_kw
         from (select
                 g."t",
                 (g."V" * g."I" * g."PF") / 1000 as kw
