@@ -1,8 +1,8 @@
 import configparser
 import os
-from matplotlib.pyplot import connect
 import psycopg2
 import pandas as pd
+from sqlalchemy import create_engine
 
 # Set variables
 config = None
@@ -24,7 +24,7 @@ def get_config():
 
     return config
 
-def get_db_connection():
+def get_db_connection(engine=False):
     """
     if conn is None, return conn
     else connect to db
@@ -34,6 +34,16 @@ def get_db_connection():
 
     if conn is not None:
         return conn
+    elif engine == True:
+        config = get_config()
+        engine = create_engine(
+            'postgresql+psycopg2://{}:{}@{}/{postgres}'.format(
+            config['DB']['USER'],
+            config['DB']['PASSWORD'],
+            config['DB']['HOST'],
+            config['DB']['DATABASE']
+            )
+        )
     else:
         config = get_config()
         conn = psycopg2.connect(
@@ -51,12 +61,13 @@ def query_table(table, add_params=None):
     add_params: add custom query here
     returns: pandas dataframe with 't' as index
     """
+
     if add_params is None:
-        query = '''
+        query = """
                 select
                     *
                 from gassmann.{}
-        '''.format(table)
+        """.format(table)
 
         df = pd.read_sql_query(
             query, get_db_connection(), index_col='t'
@@ -71,5 +82,41 @@ def query_table(table, add_params=None):
         df = pd.read_sql_query(query, get_db_connection())
 
         return df
-    
 
+def calculate_kilowatt():
+
+    query = """
+    select 
+        table_name
+    from information_schema.tables
+    where table_name like 'g%'
+    """
+
+    table_names = pd.read_sql_query(query, get_db_connection())
+
+    for table in table_names.to_numpy():
+
+        print('Creating kW materialized view for', table[0])
+
+        query = """
+        drop materialized view if exists gassmann.{}_kw;
+        create materialized view gassmann.{}_kw as
+        (select
+            k."t",
+            avg(k.kw) as avg_kw
+        from (select
+                g."t",
+                (g."V" * g."I" * g."PF") / 1000 as kw
+            from gassmann.{} g) k
+        group by k."t");
+        """.format(table[0], table[0], table[0])
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(query)
+        conn.commit()
+
+        print('kW materialized view for', table[0], 'completed')
+   
+
+    
