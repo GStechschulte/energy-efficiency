@@ -1,4 +1,4 @@
--- Hourly kWH
+-- Hourly kW
 select
 	date_part('hour', g."t") as hour,
 	avg(kw) as avg_kw
