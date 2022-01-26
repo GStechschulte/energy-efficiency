@@ -10,7 +10,8 @@ conn = None
 
 def get_config():
     """
-    get configuration. . .
+    Get configuration of the database
+    return: DB config
     """
     global config
 
@@ -28,6 +29,7 @@ def get_db_connection(engine=False):
     """
     if conn is None, return conn
     else connect to db
+    return: DB connection
     """
     
     global conn
@@ -62,12 +64,14 @@ def query_table(table, add_params=None):
     returns: pandas dataframe with 't' as index
     """
 
+    config = get_config()
+
     if add_params is None:
         query = """
                 select
                     *
-                from gassmann.{}
-        """.format(table)
+                from {}."{}"
+        """.format(config['DB']['SCHEMA'], table)
 
         df = pd.read_sql_query(
             query, get_db_connection(), index_col='t'
@@ -83,7 +87,55 @@ def query_table(table, add_params=None):
 
         return df
 
+
+def get_table_names(time=None):
+
+    config = get_config()
+
+    if time == None:
+        query = """
+        select
+            table_name
+        from 
+            information_schema.tables
+        where 
+            table_name not like '%H%'
+        and 
+            table_name not like '%T%'
+        and 
+            table_name like 'g_%'
+        """
+
+        all_table_names = pd.read_sql_query(query, get_db_connection())
+        return all_table_names.to_numpy()
+
+    elif time == '1H':
+        query = """
+        select
+            table_name
+        from 
+            information_schema.tables
+        where 
+            table_name like '%H%'
+        and 
+            table_name like 'g_%'
+        and 
+            table_name not like '%T%'
+        """
+
+        hourly_table_names = pd.read_sql_query(query, get_db_connection())
+        return hourly_table_names.to_numpy()
+
+    else:
+        raise ValueError('Time value is not to be recieved by this function')
+
+
 def calculate_kilowatt():
+    """
+    This function is currently not being used anywhere
+    """
+
+    config = get_config()
 
     query = """
     select 
@@ -99,17 +151,24 @@ def calculate_kilowatt():
         print('Creating kW materialized view for', table[0])
 
         query = """
-        drop materialized view if exists gassmann.{}_kw;
-        create materialized view gassmann.{}_kw as
+        drop materialized view if exists {}.{}_kw;
+        create materialized view {}.{}_kw as
         (select
             k."t",
             avg(k.kw) as avg_kw
         from (select
                 g."t",
                 (g."V" * g."I" * g."PF") / 1000 as kw
-            from gassmann.{} g) k
+            from {}.{} g) k
         group by k."t");
-        """.format(table[0], table[0], table[0])
+        """.format(
+            config['DB']['SCHEMA'],
+            table[0], 
+            config['DB']['SCHEMA'],
+            table[0], 
+            config['DB']['SCHEMA'],
+            table[0]
+            )
 
         conn = get_db_connection()
         cursor = conn.cursor()
