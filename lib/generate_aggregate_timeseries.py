@@ -24,11 +24,13 @@ def run_timeseries(custom=False, time_agg=list):
 
     for table in table_names.to_numpy():
 
+        config = helper.get_config()
+
         query = """
         select
             *
-        from gassmann.{}
-        """.format(table[0])
+        from {}.{}
+        """.format(config['DB']['SCHEMA'], table[0])
         
         df = pd.read_sql_query(query, helper.get_db_connection(), index_col='t')
 
@@ -50,7 +52,7 @@ def run_timeseries(custom=False, time_agg=list):
                 con=helper.get_db_connection(engine=True), 
                 index=True,
                 if_exists='replace',
-                schema='gassmann')
+                schema='{}'.format(config['DB']['SCHEMA'],))
 
         print('Time aggregation materialized view for', table[0], 'completed')
         
