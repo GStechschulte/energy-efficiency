@@ -4,6 +4,8 @@ import numpy as np
 
 def visualize_daily():
 
+    config = helper.get_config()
+
     query = """
     select
         table_name
@@ -33,14 +35,44 @@ def visualize_daily():
             from (select
                     g."t",
                     g."P" / 1000 as kw
-                from gassmann.{} g) k
+                from {}.{} g) k
             group by k."t") p
         group by date_part('day', p."t")
         order by day;
-        """.format(table[0])
+        """.format(config['DB']['SCHEMA'], table[0])
 
         df_kw = pd.read_sql_query(query, helper.get_db_connection())
         machine_kw[table[0]] = list(df_kw.avg_kwh_day)
 
     return machine_kw
+
+
+def visualize_hourly(single_machine=False):
+
+    config = helper.get_config()
+    hourly_table_names = helper.get_table_names(time='1H')
+    machine_hourly_kw = {}
+
+    if single_machine == True:
+
+        query = """
+        select
+        """
+    else:
+        for table in hourly_table_names:
+            query = """
+            select
+                date_part('hour', g."t") as hour,
+                avg(kw) as avg_kw
+            from
+                {}."{}" g
+            group by date_part('hour', g."t")
+            order by hour
+            """.format(config['DB']['SCHEMA'], table[0])
+
+            df_hourly_kw = pd.read_sql_query(query, helper.get_db_connection())
+            machine_hourly_kw[table[0]] = list(df_hourly_kw.avg_kw)
+        
+        return machine_hourly_kw
+
 
