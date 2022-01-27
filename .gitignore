@@ -130,3 +130,4 @@ db_config.py
 config/
 .DS_Store
 __pycache__
+user_access.sql
