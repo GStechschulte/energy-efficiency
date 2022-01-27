@@ -8,5 +8,5 @@ Code, works in progress, and supplemental information related to my master's the
 
 [data_loader](data_loader/) - Python script for loading all the machine data into PostgreSQL
 
-[load_profiles](load_profiles/) - Exploratory analysis and visualization of load profiles at different time resolutions
+[EDA](EDA/) - Contains visualizations of load profiles broken down by machine, day, and hour
 
