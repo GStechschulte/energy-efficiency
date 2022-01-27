@@ -2,7 +2,7 @@ from lib.util import helper
 import pandas as pd
 import numpy as np
 
-def visualize_daily():
+def visualize_daily(agg):
 
     config = helper.get_config()
 
@@ -24,25 +24,47 @@ def visualize_daily():
 
     for table in table_names.to_numpy():
 
-        query = """
-        select
-            date_part('day', p."t") as day,
-            avg(p.avg_phase_kw) * 24 as avg_kwh_day
-        from(
+        if agg == 'avg':
+            query = """
             select
-                k."t",
-                avg(k.kw) as avg_phase_kw	
-            from (select
-                    g."t",
-                    g."P" / 1000 as kw
-                from {}.{} g) k
-            group by k."t") p
-        group by date_part('day', p."t")
-        order by day;
-        """.format(config['DB']['SCHEMA'], table[0])
+                date_part('day', p."t") as day,
+                avg(p.avg_phase_kw) * 24 as avg_kwh_day
+            from(
+                select
+                    k."t",
+                    avg(k.kw) as avg_phase_kw	
+                from (select
+                        g."t",
+                        g."P" / 1000 as kw
+                    from {}.{} g) k
+                group by k."t") p
+            group by date_part('day', p."t")
+            order by day;
+            """.format(config['DB']['SCHEMA'], table[0])
 
-        df_kw = pd.read_sql_query(query, helper.get_db_connection())
-        machine_kw[table[0]] = list(df_kw.avg_kwh_day)
+            df_kw = pd.read_sql_query(query, helper.get_db_connection())
+            machine_kw[table[0]] = list(df_kw.avg_kwh_day)
+
+        elif agg == 'sum':
+            query = """
+            select
+                date_part('day', p."t") as day,
+                sum(p.avg_phase_kw) as sum_kw_day
+            from(
+                select
+                    k."t",
+                    avg(k.kw) as avg_phase_kw	
+                from (select
+                        g."t",
+                        g."P" / 1000 as kw
+                    from {}.{} g) k
+                group by k."t") p
+            group by date_part('day', p."t")
+            order by day;
+            """.format(config['DB']['SCHEMA'], table[0])
+
+            df_kw = pd.read_sql_query(query, helper.get_db_connection())
+            machine_kw[table[0]] = list(df_kw.sum_kw_day)
 
     return machine_kw
 
