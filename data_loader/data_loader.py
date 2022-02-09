@@ -4,47 +4,43 @@ import pandas as pd
 import os
 sys.path.append('/Users/wastechs/Documents/git-repos/energy-efficiency')
 import db_config as config
+from lib.util import helper
+import psycopg2
 
-class data_preprocess():
+class data_loader():
+
+    def __init__(self, local):
+        self.conn = helper.get_db_connection(local=local)
+
+        try:
+            print(self.conn)
+            self.cursor = self.conn.cursor()
+        except:
+            print('Connection not established')
+
+    def conn(self):
+        return self.conn
     
-    def time(df):
-        """
-        Convert df['t'] epochs to datetime
-        return: df['t'] as a timestamp
-        """
-        missing = df.isna().sum().values
-        assert missing.any() == 0
-
-        df.t = pd.to_datetime(df.t, unit='s')
-        df.set_index(df.t, inplace=True)
-        del df['t']
-
-        return df
+    def load(self, csv, table_name, delimiter):
+        with open(csv, 'r') as f:
+            next(f)
+            self.cursor.copy_from(f, table_name, sep='{}'.format(delimiter))
+        self.conn.commit()
 
 if __name__ == '__main__':
     
-    # List all machine csv files in "your" directory
-    path = '/Users/wastechs/Documents/data/clemap/cat/'
+    path = '/Users/wastechs/Documents/data/clemap/cat_final/'
     files = os.listdir(path)
-
-    # Create DB engine from db_config file
-    engine = create_engine(
-        'postgresql+psycopg2://{}:{}@{}/{postgres}'.format(
-            config.sql['user'],
-            config.sql['password'],
-            config.sql['host'],
-            config.sql['db_name']
-            )
-        )
+    postgreSQL = data_loader(local=True)
+    sensors = helper.get_sensor_map()
     
     for file in files:
-        table_name = file.replace('.csv', '')
-        df = pd.read_csv(path + "{}".format(file))
-        df_preprocess = data_preprocess.time(df)
-        df_preprocess.to_sql(
-            "{}".format(table_name), 
-            con=engine, 
-            schema='gassmann', 
-            if_exists='replace', index=True)
-
-        print(table_name, 'has been uploaded to postgreSQL')
+        sensor_name = file.replace('.csv', '')
+        for key, value in sensors.items():
+            if key == sensor_name:
+                table = value
+        
+        full_path = path + file
+        print(file, 'is being uploaded to postgreSQL table', table)
+        postgreSQL.load("{}".format(full_path), 'gassmann.{}'.format(table), ',')
+        print(file, 'has been uploaded to postgreSQL table', table)
