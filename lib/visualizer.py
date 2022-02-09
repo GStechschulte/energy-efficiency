@@ -35,7 +35,7 @@ def visualize_daily(agg):
                     avg(k.kw) as avg_phase_kw	
                 from (select
                         g."t",
-                        g."P" / 1000 as kw
+                        g."p" / 1000 as kw
                     from {}.{} g) k
                 group by k."t") p
             group by date_part('day', p."t")
@@ -56,7 +56,7 @@ def visualize_daily(agg):
                     avg(k.kw) as avg_phase_kw	
                 from (select
                         g."t",
-                        g."P" / 1000 as kw
+                        g."p" / 1000 as kw
                     from {}.{} g) k
                 group by k."t") p
             group by date_part('day', p."t")
