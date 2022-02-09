@@ -4,8 +4,24 @@ import os
 from os.path import isfile, join
 from os import listdir
 import db_config as config
+from sqlalchemy import create_engine
+import psycopg2
+from lib.util import helper
+
 
 def run_timeseries(custom=False, time_agg=list):
+
+    config = helper.get_config()
+
+    engine = create_engine(
+    'postgresql+psycopg2://{}:{}@{}/{}'.format(
+        config['DB']['USER'],
+        config['DB']['PASSWORD'],
+        config['DB']['HOST'],
+        config['DB']['DATABASE'])
+    )
+
+    print(engine)
 
     if custom != True:
         time_resolution = ['1T', '5T', '10T', '15T', '30T', '1H']
@@ -13,48 +29,51 @@ def run_timeseries(custom=False, time_agg=list):
         assert time_agg != list
         minutes = time_agg
 
+    table_names = list(helper.get_sensor_map().values())
+    
     query = """
     select 
         table_name
     from information_schema.tables
-    where table_name like 'g%'
     """
 
-    table_names = pd.read_sql_query(query, helper.get_db_connection())
+    all_tables = pd.read_sql_query(query, helper.get_db_connection())
 
-    for table in table_names.to_numpy():
-
+    for table in all_tables.to_numpy():
         config = helper.get_config()
 
-        query = """
-        select
-            *
-        from {}.{}
-        """.format(config['DB']['SCHEMA'], table[0])
+        if table in table_names:
+            query = """
+            select
+                *
+            from {}.{}
+            """.format(config['DB']['SCHEMA'], table[0])
+            
+            df = pd.read_sql_query(query, helper.get_db_connection(), index_col='t')
+
+            for time in time_resolution:
+                feats = ['v', 'i', 's', 'p', 'q', 'pf', 'phi']
+                print('Creating', time, 'time aggregation materialized view for', table[0])
+
+                df_time_agg = pd.DataFrame(
+                data=df[feats].resample(time).mean(),
+                index=df.resample(time).sum().index
+                )
+
+                df_time_agg['kw'] = df_time_agg['p'] / 1000
+                table_name = table[0] + '_{}'.format(time)
+
+                df_time_agg.to_sql(
+                    "{}".format(table_name), 
+                    con=engine, 
+                    index=True,
+                    if_exists='replace',
+                    schema='{}'.format(config['DB']['SCHEMA'],))
+
+            print('Time aggregation materialized view for', table[0], 'completed')
         
-        df = pd.read_sql_query(query, helper.get_db_connection(), index_col='t')
-
-        for time in time_resolution:
-
-            feats = ['V', 'I', 'S', 'P', 'Q', 'PF', 'PHI']
-            print('Creating', time, 'time aggregation materialized view for', table[0])
-
-            df_time_agg = pd.DataFrame(
-            data=df[feats].resample(time).mean(),
-            index=df.resample(time).sum().index
-            )
-
-            df_time_agg['kw'] = df_time_agg['P'] / 1000
-            table_name = table[0] + '_{}'.format(time)
-
-            df_time_agg.to_sql(
-                "{}".format(table_name), 
-                con=helper.get_db_connection(engine=True), 
-                index=True,
-                if_exists='replace',
-                schema='{}'.format(config['DB']['SCHEMA'],))
-
-        print('Time aggregation materialized view for', table[0], 'completed')
+        else:
+            pass
         
   
 
