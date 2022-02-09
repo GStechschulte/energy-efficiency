@@ -19,11 +19,16 @@ def get_config():
         return config
 
     config = configparser.ConfigParser()
+    #if local == True:
     config.read(os.path.join(
-        os.path.dirname(__file__), '../../config/config.ini')
-        )
-
+        os.path.dirname(__file__), '../../config/config_local.ini')
+    )
     return config
+    #else:
+    #    config.read(os.path.join(
+    #        os.path.dirname(__file__), '../../config/config.ini')
+    #        )
+    #    return config
 
 def get_db_connection(engine=False):
     """
@@ -39,13 +44,14 @@ def get_db_connection(engine=False):
     elif engine == True:
         config = get_config()
         engine = create_engine(
-            'postgresql+psycopg2://{}:{}@{}/{postgres}'.format(
+            'postgresql+psycopg2://{}:{}@{}/{}'.format(
             config['DB']['USER'],
             config['DB']['PASSWORD'],
             config['DB']['HOST'],
             config['DB']['DATABASE']
             )
         )
+        return engine
     else:
         config = get_config()
         conn = psycopg2.connect(
@@ -54,8 +60,8 @@ def get_db_connection(engine=False):
             user=config['DB']['USER'],
             password=config['DB']['PASSWORD']
             )
+        return conn
 
-    return conn
 
 def query_table(table, add_params=None):
     """
@@ -117,10 +123,6 @@ def get_table_names(time=None):
             information_schema.tables
         where 
             table_name like '%H%'
-        and 
-            table_name like 'g_%'
-        and 
-            table_name not like '%T%'
         """
 
         hourly_table_names = pd.read_sql_query(query, get_db_connection())
@@ -130,52 +132,28 @@ def get_table_names(time=None):
         raise ValueError('Time value is not to be recieved by this function')
 
 
-def calculate_kilowatt():
-    """
-    This function is currently not being used anywhere
-    """
+def get_sensor_map():
 
-    config = get_config()
+    sensor_map = {
+        '5fe33f53923d596335e69d41': 'gesamtmessung',
+        '5fe3400d923d596335e69d42': 'vk_2_eg',
+        '5fe34044923d596335e69d43': 'stahl_folder',
+        '5fe34060923d596335e69d44': 'og_3',
+        '5fe34098923d596335e69d46': 'eg',
+        '5fe340b3923d596335e69d47': 'entsorgung',
+        '5fe340cb923d596335e69d48': 'og',
+        '5fe340e3923d596335e69d49': 'uv_eg',
+        '5fe340fc923d596335e69d4a': 'r707lv_f4032',
+        '5fe34116923d596335e69d4b': 'uv_sigma_line_eg',
+        '5fe3412c923d596335e69d4c': 'r707lv_trockner',
+        '5fe34145923d596335e69d4d': 'r707lv_vari_air',
+        '5fe3415e923d596335e69d4e': 'xl106_druckmaschine',
+        '5fe3417a923d596335e69d4f': 'xl106_uv_scan',
+        '5fe34191923d596335e69d50': 'hauptluftung',
+        '5fe341bd923d596335e69d51': 'vk_1_ug',
+        '5fe341d4923d596335e69d52': 'r707lv_f4034',
+        '5fe341ee923d596335e69d53': 'og_2',
+        '6017e77a42d6f4614409d192': 'not_in_list'
+    }
 
-    query = """
-    select 
-        table_name
-    from information_schema.tables
-    where table_name like 'g%'
-    """
-
-    table_names = pd.read_sql_query(query, get_db_connection())
-
-    for table in table_names.to_numpy():
-
-        print('Creating kW materialized view for', table[0])
-
-        query = """
-        drop materialized view if exists {}.{}_kw;
-        create materialized view {}.{}_kw as
-        (select
-            k."t",
-            avg(k.kw) as avg_kw
-        from (select
-                g."t",
-                (g."V" * g."I" * g."PF") / 1000 as kw
-            from {}.{} g) k
-        group by k."t");
-        """.format(
-            config['DB']['SCHEMA'],
-            table[0], 
-            config['DB']['SCHEMA'],
-            table[0], 
-            config['DB']['SCHEMA'],
-            table[0]
-            )
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(query)
-        conn.commit()
-
-        print('kW materialized view for', table[0], 'completed')
-   
-
-    
+    return sensor_map
