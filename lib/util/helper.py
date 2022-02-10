@@ -157,3 +157,23 @@ def get_sensor_map():
     }
 
     return sensor_map
+
+
+def weekday_time_series(sensor_id):
+    """
+    Since we have 10 days of data, the first day, October 8th, is a Friday.
+    Preprocess the time series to only include Monday - Friday
+
+    Parameters
+    ----------
+    df: pd.DataFrame with index datetime
+
+    Returns
+    -------
+    df: preprocessed with only the working days of the week
+    """ 
+
+    df = query_table(sensor_id)
+    weekday_df = df[(df.index.day >= 11) & (df.index.day <= 15)]
+
+    return weekday_df
