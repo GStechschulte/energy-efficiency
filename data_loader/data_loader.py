@@ -9,8 +9,8 @@ import psycopg2
 
 class data_loader():
 
-    def __init__(self, local):
-        self.conn = helper.get_db_connection(local=local)
+    def __init__(self):
+        self.conn = helper.get_db_connection()
 
         try:
             print(self.conn)
@@ -29,9 +29,9 @@ class data_loader():
 
 if __name__ == '__main__':
     
-    path = '/Users/wastechs/Documents/data/clemap/cat_final/'
+    path = '/Users/wastechs/Documents/data/clemap/cat_final_v2/'
     files = os.listdir(path)
-    postgreSQL = data_loader(local=True)
+    postgreSQL = data_loader()
     sensors = helper.get_sensor_map()
     
     for file in files:
@@ -39,8 +39,9 @@ if __name__ == '__main__':
         for key, value in sensors.items():
             if key == sensor_name:
                 table = value
-        
+
         full_path = path + file
         print(file, 'is being uploaded to postgreSQL table', table)
-        postgreSQL.load("{}".format(full_path), 'gassmann.{}'.format(table), ',')
+        postgreSQL.load("{}".format(full_path), 'sensors.{}'.format(table), ',')
         print(file, 'has been uploaded to postgreSQL table', table)
+        
