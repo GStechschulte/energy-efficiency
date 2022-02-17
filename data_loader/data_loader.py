@@ -28,7 +28,12 @@ class data_loader():
         self.conn.commit()
 
 if __name__ == '__main__':
-    
+
+    ##########################################################################
+    ## Uncomment code block according to Gassmann vs. HIPE data / directory ##
+    ##########################################################################
+
+    """
     path = '/Users/wastechs/Documents/data/clemap/cat_final_v2/'
     files = os.listdir(path)
     postgreSQL = data_loader()
@@ -44,4 +49,18 @@ if __name__ == '__main__':
         print(file, 'is being uploaded to postgreSQL table', table)
         postgreSQL.load("{}".format(full_path), 'sensors.{}'.format(table), ',')
         print(file, 'has been uploaded to postgreSQL table', table)
-        
+    """
+    
+    postgreSQL = data_loader()
+
+    path = '/Users/wastechs/Documents/data/hipe_subset/'
+    files = os.listdir(path)
+
+    for file in files:
+        machine_name = file.replace('_subset.csv', '') ## machine name is the table name
+
+        full_path = path + file
+
+        print(file, 'is being uploaded to postgreSQL table', machine_name)
+        postgreSQL.load("{}".format(full_path), 'hipe.{}'.format(machine_name), ',')
+        print(file, 'has been uploaded to postgreSQL table', machine_name)
