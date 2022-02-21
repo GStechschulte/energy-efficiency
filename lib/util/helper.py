@@ -1,5 +1,6 @@
 import configparser
 import os
+import json
 import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
@@ -59,7 +60,7 @@ def get_db_connection(engine=False):
         return conn
 
 
-def query_table(table, add_params=None):
+def query_table(table=None, add_params=None):
     """
     table: name of table to query
     add_params: add custom query here
@@ -81,11 +82,11 @@ def query_table(table, add_params=None):
 
         return df
     else:
-        query = """
-                {query}
-        """
-        query.format(query=add_params)
-        df = pd.read_sql_query(query, get_db_connection())
+        #query = """
+        #        {query}
+        #"""
+        #query.format(query=add_params)
+        df = pd.read_sql_query(add_params, get_db_connection())
 
         return df
 
@@ -128,31 +129,47 @@ def get_table_names(time=None):
         raise ValueError('Time value is not to be recieved by this function')
 
 
-def get_sensor_map():
+def get_sensor_map(dataset):
 
-    sensor_map = {
-        '5fe33f53923d596335e69d41': 'gesamtmessung', 
-        '5fe3400d923d596335e69d42': 'vk_2_eg',
-        '5fe34044923d596335e69d43': 'stahl_folder',
-        '5fe34060923d596335e69d44': 'og_3',
-        '5fe34098923d596335e69d46': 'eg',
-        '5fe340b3923d596335e69d47': 'entsorgung',
-        '5fe340cb923d596335e69d48': 'og',
-        '5fe340e3923d596335e69d49': 'uv_eg',
-        '5fe340fc923d596335e69d4a': 'r707lv_f4032',
-        '5fe34116923d596335e69d4b': 'uv_sigma_line_eg',
-        '5fe3412c923d596335e69d4c': 'r707lv_trockner',
-        '5fe34145923d596335e69d4d': 'r707lv_vari_air',
-        '5fe3415e923d596335e69d4e': 'xl106_druckmaschine', 
-        '5fe3417a923d596335e69d4f': 'xl106_uv_scan',
-        '5fe34191923d596335e69d50': 'hauptluftung',
-        '5fe341bd923d596335e69d51': 'vk_1_ug',
-        '5fe341d4923d596335e69d52': 'r707lv_f4034',
-        '5fe341ee923d596335e69d53': 'og_2',
-        '6017e77a42d6f4614409d192': 'not_in_list'
-    }
+    if dataset == 'gassmann':
+        sensor_map = {
+            '5fe33f53923d596335e69d41': 'gesamtmessung', 
+            '5fe3400d923d596335e69d42': 'vk_2_eg',
+            '5fe34044923d596335e69d43': 'stahl_folder',
+            '5fe34060923d596335e69d44': 'og_3',
+            '5fe34098923d596335e69d46': 'eg',
+            '5fe340b3923d596335e69d47': 'entsorgung',
+            '5fe340cb923d596335e69d48': 'og',
+            '5fe340e3923d596335e69d49': 'uv_eg',
+            '5fe340fc923d596335e69d4a': 'r707lv_f4032',
+            '5fe34116923d596335e69d4b': 'uv_sigma_line_eg',
+            '5fe3412c923d596335e69d4c': 'r707lv_trockner',
+            '5fe34145923d596335e69d4d': 'r707lv_vari_air',
+            '5fe3415e923d596335e69d4e': 'xl106_druckmaschine', 
+            '5fe3417a923d596335e69d4f': 'xl106_uv_scan',
+            '5fe34191923d596335e69d50': 'hauptluftung',
+            '5fe341bd923d596335e69d51': 'vk_1_ug',
+            '5fe341d4923d596335e69d52': 'r707lv_f4034',
+            '5fe341ee923d596335e69d53': 'og_2',
+            '6017e77a42d6f4614409d192': 'not_in_list'
+        }
+        return sensor_map
 
-    return sensor_map
+    elif dataset == 'hipe':
+        sensor_map = {
+            'chip_saw': 'chip_saw',
+            'high_temp_oven': 'high_temp_oven',
+            'chip_press': 'chip_press',
+            'main_terminal': 'main_terminal',
+            'soldering_oven': 'soldering_oven',
+            'screen_printer': 'screen_printer',
+            'vacuum_pump_2': 'vacuum_pump_2',
+            'vacuum_pump_1': 'vacuum_pump_1',
+            'vacuum_oven': 'vacuum_oven',
+            'washing_machine': 'washing_machine',
+            'pick_place_unit': 'pick_place_unit'
+        }
+        return sensor_map
 
 
 def weekday_time_series(sensor_id):
@@ -173,3 +190,33 @@ def weekday_time_series(sensor_id):
     weekday_df = df[(df.index.day >= 11) & (df.index.day <= 15)]
 
     return weekday_df
+
+def update_metrics(model, tau, add_regressor, trend, out_sample_rmse, 
+in_sample_rmse):
+
+    score_table = 'metrics'
+
+    query = """
+        insert into {schema}.{score_table}
+        (model, tau, add_regressor, trend, out_sample_rmse, in_sample_rmse)
+        values
+        ('{model}', '{tau}', TRIM('{add_regressor}'), '{trend}', '{out_sample_rmse}',
+        '{in_sample_rmse}')
+    """
+
+    query = query.format(
+        schema=config['DB']['SCHEMA'],
+        score_table=score_table,
+        model=model,
+        tau=tau,
+        add_regressor=json.dumps(add_regressor),
+        trend=trend,
+        out_sample_rmse=out_sample_rmse,
+        in_sample_rmse=in_sample_rmse
+    )
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(query)
+    conn.commit()
+
