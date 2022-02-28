@@ -1,6 +1,9 @@
 from lib.util import helper
 import pandas as pd
 import numpy as np
+from pandas.api.types import CategoricalDtype
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def visualize_daily(agg):
 
@@ -76,7 +79,6 @@ def visualize_hourly(single_machine=False):
     machine_hourly_kw = {}
 
     if single_machine == True:
-
         query = """
         select
         """
@@ -87,7 +89,7 @@ def visualize_hourly(single_machine=False):
                 date_part('hour', g."t") as hour,
                 avg(kw) as avg_kw
             from
-                {}."{}" g
+                {}.{} g
             group by date_part('hour', g."t")
             order by hour
             """.format(config['DB']['SCHEMA'], table[0])
@@ -96,5 +98,40 @@ def visualize_hourly(single_machine=False):
             machine_hourly_kw[table[0]] = list(df_hourly_kw.avg_kw)
         
         return machine_hourly_kw
+
+
+def hourly_profile_heatmap():
+    
+    config = helper.get_config()
+    table_names = helper.get_table_names(time=None)
+
+    for table in table_names:
+        query = """
+        select
+            *
+        from
+            {}.{} t
+        """.format(config['DB']['SCHEMA'], table[0])
+
+        machine_df = pd.read_sql_query(query, helper.get_db_connection())
+        
+        cats = [
+            'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+            ]
+        cat_type = CategoricalDtype(categories=cats, ordered=True)
+
+        machine_df['day_name'] = machine_df.index.day_name().values
+        machine_df['day_name'] = machine_df['day_name'].astype(cat_type)
+        machine_df['hour'] = machine_df.index.hour
+        
+        hourly_profile = machine_df.group(['day_name', 'hour'])['kw'].mean().unstack()
+
+        plt.figure(figsize=(12, 8))
+        sns.heatmap(hourly_profile)
+        plt.title(table[0], 'Hourly Load Heatmap')
+
+
+
+#def weekly_profile_heatmap():
 
 
