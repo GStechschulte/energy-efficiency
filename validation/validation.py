@@ -4,12 +4,12 @@ from black import out
 import pandas as pd
 from numpy import array
 from pyparsing import col
+from sklearn import utils
 from sklearn.preprocessing import OrdinalEncoder
 from lib.util import helper
-from lib.data_preprocessing import preprocess
+from lib.util.data_preprocessing import preprocess
 from prophet import Prophet
 from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
-#from models.time_series.bayesian_gam import Prophet
 from lib.util import helper
 
 
@@ -19,7 +19,7 @@ update = False
 # 1.) Retrieve preprocessed data
 def gam_model(min_train_date, end_train_date, end_test_date, tau_prior,
 multiplicative_seasonality='additive', add_seasonality=None, trend_model='linear',
-tables=list, update_score=False):
+tables=list, update_score=False): 
     """
     Preprocess each machine's data in the table list
 
@@ -141,7 +141,7 @@ multiplicative_seasonality, add_seasonality, trend_model):
 
             # Send test metrics to postgreSQL
             if update == True:
-                helper.update_metrics(
+                helper.update_gam_metrics(
                     model=model_name,
                     tau=tau,
                     add_regressor=add_seasonality,
@@ -153,17 +153,10 @@ multiplicative_seasonality, add_seasonality, trend_model):
     else:
         pass ## for right now, just pass
 
+    # Optional: plot results
 
+#def gp_model()
 
-
-
-# 4.) Optional: plot results
-
-
-# 5.) Retrieve test metrics
-
-
-# 6.) Send metrics to postgreSQL
 
 def compute_metrics(ground_truth, predictions):
 
