@@ -105,8 +105,6 @@ def get_table_names(time=None):
             table_name not like '%H%'
         and 
             table_name not like '%T%'
-        and 
-            table_name like 'g_%'
         """
 
         all_table_names = pd.read_sql_query(query, get_db_connection())
@@ -191,7 +189,7 @@ def weekday_time_series(sensor_id):
 
     return weekday_df
 
-def update_metrics(model, tau, add_regressor, trend, out_sample_rmse, 
+def update_gam_metrics(model, tau, add_regressor, trend, out_sample_rmse, 
 in_sample_rmse):
 
     score_table = 'metrics'
@@ -219,4 +217,40 @@ in_sample_rmse):
     cur = conn.cursor()
     cur.execute(query)
     conn.commit()
+
+
+def update_gp_metrics(model, time_agg, kernel, lr, training_iter, optimizer, out_sample_mse, 
+out_sample_mape, elapsed_time):
+
+    score_table = 'gp_metrics'
+
+    query = """
+        insert into {schema}.{score_table}
+        (model, time_agg, kernel, lr, training_iter, optimizer, out_sample_mse, out_sample_mape,
+        elapsed_time)
+        values
+        ('{model}', '{time_agg}', TRIM('{kernel}'), '{lr}', '{training_iter}', '{optimizer}', 
+        '{out_sample_mse}', '{out_sample_mape}', '{elapsed_time}')
+    """
+
+    query = query.format(
+        schema=config['DB']['SCHEMA'],
+        score_table=score_table,
+        model=model,
+        time_agg=time_agg,
+        kernel=kernel,
+        lr=lr,
+        training_iter=training_iter,
+        optimizer=optimizer,
+        out_sample_mse=out_sample_mse,
+        out_sample_mape=out_sample_mape,
+        elapsed_time=elapsed_time
+    )
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(query)
+    conn.commit()
+
+
 
