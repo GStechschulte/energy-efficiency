@@ -5,6 +5,11 @@ import numpy as np
 import torch
 
 
+y_train_mean = None
+y_train_std = None
+x_min = None
+x_max = None
+
 
 def gam_preprocess(table, min_train_date, end_train_date, end_test_date):
     """
@@ -51,7 +56,12 @@ def gam_preprocess(table, min_train_date, end_train_date, end_test_date):
 
     return train_set, test_set
 
-def gp_preprocess(table, freq, normalize_time=bool):
+def gp_preprocess(table, freq, normalize_time=bool, custom_dates=False):
+
+    global y_train_mean
+    global y_train_std
+    global x_min
+    global x_max
 
     # Query table production weekday time series 
     df = helper.weekday_time_series(table)
@@ -66,6 +76,7 @@ def gp_preprocess(table, freq, normalize_time=bool):
 
     if normalize_time == True:
         # Normalize integer based time encodings
+        x_max, x_min = df['t'].max(), df['t'].min()
         df['t'] = (df['t'] - df['t'].min()) / (df['t'].max() - df['t'].min())
         X = df['t'].values
     else:
@@ -73,23 +84,48 @@ def gp_preprocess(table, freq, normalize_time=bool):
     
     y = df['kw'].values
 
-    n = len(X)
-    prop_train = 0.8
-    n_train = round(prop_train * n)
+    if custom_dates == True:
+        print('yo')
+    else:
+        n = len(X)
+        prop_train = 0.8
+        n_train = round(prop_train * n)
 
-    # Training
-    X_train = torch.from_numpy(X[:n_train]).to(torch.float64)
-    y_train = torch.from_numpy(y[:n_train]).to(torch.float64)
+        # Training
+        X_train = torch.from_numpy(X[:n_train]).to(torch.float64)
+        y_train = torch.from_numpy(y[:n_train]).to(torch.float64)
 
-    # Testing
-    X_test = torch.from_numpy(X).to(torch.float64)
-    y_test = torch.from_numpy(y[n_train:]).to(torch.float64)
+        # Testing
+        X_test = torch.from_numpy(X).to(torch.float64)
+        y_test = torch.from_numpy(y[n_train:]).to(torch.float64)
 
-    # Standardizing helps with hyperparameter initialization
-    y_train_mean = torch.mean(y_train)
-    y_train_std = torch.std(y_train)
+        # Standardizing helps with hyperparameter initialization
+        y_train_mean = torch.mean(y_train)
+        y_train_std = torch.std(y_train)
 
-    y_train = (y_train - y_train_mean) / (y_train_std)
-    y_test = (y_test - y_train_mean) / (y_train_std)
+        y_train = (y_train - y_train_mean) / (y_train_std)
+        y_test = (y_test - y_train_mean) / (y_train_std)
 
-    return X_train, y_train, X_test, y_test, n_train
+        return X_train, y_train, X_test, y_test, n_train
+
+def gp_inverse_transform(train_x, train_y, test_x, test_y):
+    """
+    . . .
+    """
+
+    # Target Variable
+    train_y *= y_train_std
+    train_y += y_train_mean
+
+    test_y *= y_train_std
+    test_y += y_train_mean
+
+    # Time Variable
+    train_x -= x_min
+
+    #scaled = normed_x ( max - min) + min
+
+    return train_y, test_y, y_train_std, y_train_mean
+
+
+
