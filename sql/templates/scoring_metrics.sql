@@ -19,6 +19,7 @@ create table if not exists sensors.gp_metrics
 	training_iter double precision,
 	optimizer character varying,
 	out_sample_mse double precision,
-	out_sample_mape double precision
+	out_sample_mape double precision,
+	elapsed_time double precision
 );
 
