@@ -60,7 +60,8 @@ def gam_preprocess(table, min_train_date, end_train_date, end_test_date):
 
     return train_set, test_set
 
-def gp_preprocess(machine, freq, normalize_time=bool, custom_dates=False):
+
+def gp_preprocess(machine, freq, log_transform=False, normalize_time=bool, custom_dates=False):
 
     global y_train_mean
     global y_train_std
@@ -72,7 +73,7 @@ def gp_preprocess(machine, freq, normalize_time=bool, custom_dates=False):
 
     # Query table production weekday time series
 
-    if bool(re.findall('trockner', machine)):
+    if bool(re.findall('trockner', machine)) or bool(re.findall('uv_sigma_line', machine)):
         df = helper.query_table(table=machine)  
     else:
         df = helper.weekday_time_series(sensor_id=machine)
@@ -122,9 +123,24 @@ def gp_preprocess(machine, freq, normalize_time=bool, custom_dates=False):
 
         return X_train, y_train, X_test, y_test, n_train
 
-def gp_inverse_transform(train_y, test_y, observed_preds, lower, upper):
+
+def gp_inverse_transform(train_y, test_y, observed_preds, func_preds, lower, upper):
     """
-    . . .
+    Using the scale and location of the training data, transform the preds and
+    training / test data back to their original scale (kW). Return the original 
+    time scale too.
+
+    Parameters
+    ----------
+    train_y: observed train_y points
+    test_y: test_y points
+    observed_preds: model predictions
+    lower: -2 $\sigma$
+    uppwer: +2 $\sigma$
+
+    Returns
+    -------
+    Inverse transformed parameters
     """
 
     # Target Variable inverse transform
@@ -138,6 +154,13 @@ def gp_inverse_transform(train_y, test_y, observed_preds, lower, upper):
     observed_preds = observed_preds.mean * y_train_std
     observed_preds += y_train_mean
 
+    # Func preds inverse transform
+    func_preds_mean = func_preds.mean * y_train_std
+    func_preds_mean += y_train_mean
+
+    func_preds_var = func_preds.variance * y_train_std
+    func_preds_var += y_train_mean
+
     # Confidence region inverse transform
     lower *= y_train_std
     upper *= y_train_std
@@ -148,8 +171,8 @@ def gp_inverse_transform(train_y, test_y, observed_preds, lower, upper):
     #train_x -= x_min
     #scaled = normed_x ( max - min) + min
 
-    return train_y, test_y, observed_preds, lower, upper, original_time, \
-        time_vals_train, time_vals_test
+    return train_y, test_y, observed_preds, func_preds_mean, func_preds_var, lower, upper, \
+        original_time, time_vals_train, time_vals_test
 
 
 
