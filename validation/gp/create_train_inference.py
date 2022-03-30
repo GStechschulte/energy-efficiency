@@ -1,10 +1,12 @@
 from re import S
-from multimethod import distance
+import os
+from statistics import mode
 import torch
 import gpytorch
 import pandas as pd
 from tqdm import tqdm
 from validation.gp.exact_gp import ExactGPModel
+from validation.gp.trace_model import MeanVarModelWrapper
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
 from scipy import linalg
@@ -22,6 +24,15 @@ time_aggregation = None
 def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
     test_y, n_train, machine=str, likelihood_noise=None, training_iter=100, lr=0.1,
     update_score=False, time_agg=None):
+    """
+    
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     global machine_name
     global time_aggregation
@@ -85,9 +96,6 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
             ))
 
             optimizer.step()
-    
-    #for param_name, param in model.named_parameters():
-    #    print(f'Parameter name: {param_name:42} value = {param.item()}')
 
     func_preds_mean_inv, func_preds_var_inv, observed_preds, mse, mape \
         = posterior_inference(train_x, train_y, test_x, test_y, model, \
@@ -117,8 +125,6 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
     else:
         pass
 
-    #torch.save(model.state_dict(), '../gpytorch_models/model_state.pth')
-
     return func_preds_mean_inv, func_preds_var_inv, observed_preds, mse, mape
 
 
@@ -133,12 +139,14 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
     Returns
     -------
     """
-    model.eval()
-    likelihood.eval()
 
-    with torch.no_grad(), gpytorch.settings.fast_pred_var():
+    with torch.no_grad(), gpytorch.settings.fast_pred_var(), gpytorch.settings.trace_mode():
+
+        model.eval()
+        likelihood.eval()
 
         func_preds = model(test_x)
+        #traced_model = torch.jit.trace(MeanVarModelWrapper(model), test_x)
         observed_preds = likelihood(model(test_x))
         lower, upper = observed_preds.confidence_region()
 
@@ -173,6 +181,22 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
         #mahalanobis_distance(
         #    covar_matrix=func_preds, ground_truth=observed_preds_inv,
         #   orig_time=orig_time, n_train=n_train)
+    
+        # Save the model's state as .pth type
+    
+    model_state = machine_name + '_' + time_aggregation + '.pth'
+    torch.save(
+        model.state_dict(), 
+        os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
+            model_state
+        )))
+
+    #traced_model.save(
+    #    os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
+    #    model_trace
+    #)))
+
+    #traced_model.save('traced_exact_gp.pt')
 
     return func_preds_mean_inv, func_preds_var_inv, observed_preds, mse, mape
 
