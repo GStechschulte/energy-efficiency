@@ -1,10 +1,12 @@
 from re import S
-from multimethod import distance
+import os
+from statistics import mode
 import torch
 import gpytorch
 import pandas as pd
 from tqdm import tqdm
 from validation.gp.exact_gp import ExactGPModel
+from validation.gp.trace_model import MeanVarModelWrapper
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
 from scipy import linalg
@@ -22,6 +24,15 @@ time_aggregation = None
 def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
     test_y, n_train, machine=str, likelihood_noise=None, training_iter=100, lr=0.1,
     update_score=False, time_agg=None):
+    """
+    
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     global machine_name
     global time_aggregation
@@ -30,7 +41,7 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
 
     start_time = time.time()
 
-    #likelihood = gpytorch.likelihoods.FixedNoiseGaussianLikelihood(noise=0.001)
+    #likelihood = gpytorch.likelihoods.FixedNoiseGaussianLikelihood(noise=0.005)
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
 
     if likelihood_noise is not None:
@@ -85,9 +96,6 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
             ))
 
             optimizer.step()
-    
-    #for param_name, param in model.named_parameters():
-    #    print(f'Parameter name: {param_name:42} value = {param.item()}')
 
     func_preds_mean_inv, func_preds_var_inv, observed_preds, mse, mape \
         = posterior_inference(train_x, train_y, test_x, test_y, model, \
@@ -117,14 +125,12 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
     else:
         pass
 
-    #torch.save(model.state_dict(), '../gpytorch_models/model_state.pth')
-
     return func_preds_mean_inv, func_preds_var_inv, observed_preds, mse, mape
 
 
 def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_train):
     """
-    Get into posterior preditive mode, compute predictions using LOVE, transform 
+    Get into posterior predictive mode, compute predictions using LOVE, transform 
     inputs and outputs back to their original scale, and plot the results
     
     Parameters
@@ -133,12 +139,14 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
     Returns
     -------
     """
-    model.eval()
-    likelihood.eval()
 
-    with torch.no_grad(), gpytorch.settings.fast_pred_var():
+    with torch.no_grad(), gpytorch.settings.fast_pred_var(), gpytorch.settings.trace_mode():
+
+        model.eval()
+        likelihood.eval()
 
         func_preds = model(test_x)
+        #traced_model = torch.jit.trace(MeanVarModelWrapper(model), test_x)
         observed_preds = likelihood(model(test_x))
         lower, upper = observed_preds.confidence_region()
 
@@ -152,18 +160,23 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
         test_preds = observed_preds_inv[n_train:]
         lower_preds = lower_inv[n_train:]
         upper_preds = upper_inv[n_train:]
-        
+
         mse = mean_squared_error(test_y_inv.numpy(), test_preds.numpy())
         mape = mean_absolute_percentage_error(test_y_inv.numpy(), test_preds.numpy())
         rmse = np.sqrt(mse)
         cv_rmse = np.mean(test_y_inv.numpy()) * rmse
+
+        interpolation_extrapolation(
+            orig_time_train, train_y_inv, observed_preds_inv, n_train, upper_inv,
+            lower_inv, test_y_inv, orig_time_test, orig_time)
 
         in_sample_fit(
             orig_time_train, train_y_inv, observed_preds_inv, n_train, upper_inv,
             lower_inv, test_y_inv)
 
         quality_control(
-            preds_mean=observed_preds_inv[:n_train], ground_truth=train_y_inv, 
+            preds_mean=observed_preds_inv[:n_train], lower=lower_inv[:n_train],
+            upper=upper_inv[:n_train], ground_truth=train_y_inv, 
             orig_time=orig_time_train)
 
         forecasted_consumption(
@@ -173,8 +186,52 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
         #mahalanobis_distance(
         #    covar_matrix=func_preds, ground_truth=observed_preds_inv,
         #   orig_time=orig_time, n_train=n_train)
+    
+        # Save the model's state as .pth type
+    
+    model_state = machine_name + '_' + time_aggregation + '.pth'
+    torch.save(
+        model.state_dict(), 
+        os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
+            model_state
+        )))
+
+    #traced_model.save(
+    #    os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
+    #    model_trace
+    #)))
+
+    #traced_model.save('traced_exact_gp.pt')
 
     return func_preds_mean_inv, func_preds_var_inv, observed_preds, mse, mape
+
+
+def interpolation_extrapolation(orig_time_train, train_y_inv, observed_preds_inv, 
+n_train, upper_inv, lower_inv, test_y_inv, orig_time_test, orig_time):
+
+    f, ax = plt.subplots(figsize=(16, 7))
+    training = ax.scatter(orig_time_train, train_y_inv.numpy(), s=[2.75], color='black')
+    in_sample = ax.plot(
+        orig_time_train, observed_preds_inv[:n_train].numpy(), marker='.')
+    testing = ax.scatter(orig_time_test, test_y_inv.numpy(), s=[2.75], color='black')
+    out_sample = ax.plot(
+        orig_time_test, observed_preds_inv[n_train:].numpy(), marker='.')
+    
+    ci = ax.fill_between(
+        orig_time, lower_inv.numpy(), upper_inv.numpy(), alpha=0.5, color='darkgrey'
+    )
+
+    ax.legend([
+    'Interpolation', 'Extrapolation', 'Actual Data', 'Uncertainty: + / - $2 \sigma$'
+    ])
+
+    plt.xlabel('Time', fontsize=14)
+    plt.ylim(bottom=-0.1)
+    plt.ylabel('kW', fontsize=14)
+    plt.title(
+        'Machine: {} \n Time Aggregation: {}'.format(
+            machine_name, time_aggregation))
+    plt.show()
 
 
 def in_sample_fit(orig_time_train, train_y_inv, observed_preds_inv, n_train,
@@ -214,9 +271,7 @@ upper_inv, lower_inv, test_y_inv):
         plt.ylabel('kW', fontsize=14)
         plt.title(
             'Machine: {} \n Time Aggregation: {}'.format(
-                machine_name, time_aggregation
-            )
-            )
+                machine_name, time_aggregation))
         plt.show()
 
 
@@ -317,6 +372,7 @@ def forecasted_consumption(preds_mean, test_time, lower_inv, upper_inv):
     plt.title('{} Forecasted Next Day Consumption'.format(machine_name))
 
     textstr = '\n'.join((
+    'kWh = Area Under the Curve',
     r'Upper kWh=%.2f' % (upper_total_energy, ),
     r'Average kWh=%.2f' % (mean_total_energy, ),
     r'Lower kWh=%.2f' % (lower_total_energy, )))
@@ -329,27 +385,40 @@ def forecasted_consumption(preds_mean, test_time, lower_inv, upper_inv):
     return mean_total_energy, upper_total_energy, lower_total_energy
 
 
-def quality_control(preds_mean, ground_truth, orig_time):
+def quality_control(preds_mean, upper, lower, ground_truth, orig_time):
+    """
+    ## Within CI (2 stddev) ##
+
+    If truth < upper, then truth - upper = negative value
+    If truth > lower, then truth - lower = positive value
+
+    ## Out of CI (2 stddev) ##
+
+    If truth > upper, then truth - upper = positive value
+    If truth < lower, then truth - lower = negative value
+    """
 
     deviation = ground_truth.numpy() - preds_mean.numpy()
-    std_deviation = np.std(deviation)
+    deviation_upper = ground_truth.numpy() - upper.numpy()
+    deviation_lower = ground_truth.numpy() - lower.numpy()
+
+    upper = np.argwhere(deviation_upper > 0.0)
+    lower = np.argwhere(deviation_lower < 0.0)
 
     plt.figure(figsize=(16, 7))
-    plt.plot(orig_time, deviation)
+    plt.scatter(orig_time, deviation, alpha=0.5)
+    plt.scatter(orig_time[upper], deviation[upper], color='red')
+    plt.scatter(orig_time[lower], deviation[lower], color='red')
     plt.title('Quality Control - {} Energy Performance Deviations'.format(machine_name))
-    plt.axhline(y=std_deviation*3, linestyle='--', color='red', lw=1)
-    plt.axhline(y=std_deviation*-3, linestyle='--', color='red', lw=1)
     plt.ylabel('kW (difference in predicted vs. actual)')
-    plt.legend(['Actual kW - Predicted kW', 'Upper Control Limit', 'Lower Control Limit'])
+    plt.legend([
+        'Actual kW - Predicted kW', 'Upper and Lower Control Limit +/- $2 \sigma$'])
     plt.show()
-
 
     plt.figure(figsize=(16, 7))
     plt.plot(orig_time, np.cumsum(deviation))
     plt.plot(orig_time, pd.Series(np.cumsum(deviation)).rolling(10).mean())
     plt.title('Quality Control - Energy Performance Cumulative Deviations')
-    #plt.axhline(y=std_deviation*3, linestyle='--', color='black', lw=1)
-    #plt.axhline(y=std_deviation*-3, linestyle='--', color='black', lw=1)
     plt.ylabel('kW (Cumulative difference in predicted vs. actual)')
     plt.legend(['Cumulative Deviations', 'Moving Average'])
     plt.show()
