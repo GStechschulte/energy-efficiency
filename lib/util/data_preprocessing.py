@@ -61,7 +61,8 @@ def gam_preprocess(table, min_train_date, end_train_date, end_test_date):
     return train_set, test_set
 
 
-def gp_preprocess(machine, freq, log_transform=False, normalize_time=bool, custom_dates=False):
+def gp_preprocess(machine, freq, log_transform=False, normalize_time=bool, 
+custom_dates=False):
 
     global y_train_mean
     global y_train_std
@@ -81,25 +82,49 @@ def gp_preprocess(machine, freq, log_transform=False, normalize_time=bool, custo
     # Convert negative kW values to 0.0
     df['kw'] = df['kw'].apply(lambda x: 0.0 if x == -0.0 else x)
 
-    # Infer frequency value for normalization
-    #freq = pd.infer_freq(df.index)
-    original_time = list(df.index)
-    time_int_range = np.arange(0, len(df)*freq, freq)
-    df['t'] = time_int_range
-
-    if normalize_time == True:
+    if normalize_time == True and custom_dates == True:
         # Normalize integer based time encodings
+        df = df[df.index <= '2021-10-15 12:00:00']
+        original_time = pd.DatetimeIndex(df.index)
+        time_int_range = np.arange(0, len(df)*freq, freq)
+        df['t'] = time_int_range
         x_max, x_min = df['t'].max(), df['t'].min()
         df['t'] = (df['t'] - df['t'].min()) / (df['t'].max() - df['t'].min())
-        X = df['t'].values
-    else:
-        X = df['t'].values
-    
-    y = df['kw'].values
+    elif normalize_time == True and custom_dates == False:
+        original_time = pd.DatetimeIndex(df.index)
+        time_int_range = np.arange(0, len(df)*freq, freq)
+        df['t'] = time_int_range
+        x_max, x_min = df['t'].max(), df['t'].min()
+        df['t'] = (df['t'] - df['t'].min()) / (df['t'].max() - df['t'].min())
 
     if custom_dates == True:
-        print('yo')
+        n_train = original_time.get_loc('2021-10-15 00:00:00')
+        training_window = df[df.index < '2021-10-15 00:00:00']
+        testing_window = df[
+            (df.index >= '2021-10-15 00:00:00') & (df.index <= '2021-10-15 12:00:00')
+            ]
+
+        # Training
+        X_train = torch.from_numpy(training_window['t'].values).to(torch.float64)
+        y_train = torch.from_numpy(training_window['kw'].values).to(torch.float64)
+        time_vals_train = training_window.index.to_list()
+
+        # Testing
+        X_test = torch.from_numpy(df['t'].values).to(torch.float64)
+        y_test = torch.from_numpy(testing_window['kw'].values).to(torch.float64)
+        time_vals_test = testing_window.index.to_list()
+
+        y_train_mean = torch.mean(y_train)
+        y_train_std = torch.std(y_train)
+
+        y_train = (y_train - y_train_mean) / (y_train_std)
+        y_test = (y_test - y_train_mean) / (y_train_std)
+
+        return X_train, y_train, X_test, y_test, n_train
+
     else:
+        X = df['t'].values
+        y = df['kw'].values
         n = len(X)
         prop_train = 0.8
         n_train = round(prop_train * n)
@@ -167,12 +192,5 @@ def gp_inverse_transform(train_y, test_y, observed_preds, func_preds, lower, upp
     lower += y_train_mean
     upper += y_train_mean
 
-    # Time Variable
-    #train_x -= x_min
-    #scaled = normed_x ( max - min) + min
-
     return train_y, test_y, observed_preds, func_preds_mean, func_preds_var, lower, upper, \
         original_time, time_vals_train, time_vals_test
-
-
-
