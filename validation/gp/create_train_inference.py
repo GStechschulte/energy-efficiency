@@ -1,6 +1,9 @@
+from functools import update_wrapper
 from re import S
 import os
 from statistics import mode
+from matplotlib.cbook import silent_list
+from pyparsing import col
 import torch
 import gpytorch
 import pandas as pd
@@ -8,7 +11,7 @@ from tqdm import tqdm
 from validation.gp.exact_gp import ExactGPModel
 from validation.gp.trace_model import MeanVarModelWrapper
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
+from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_pinball_loss
 from scipy import linalg
 from lib.util import helper
 from lib.util import data_preprocessing
@@ -56,7 +59,7 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
 
     #for param_name, param in model.named_parameters():
     #    print(f'Parameter name: {param_name:42} value = {param.item()}')
-
+    
     if time_agg == '5T' or time_agg == '1T':
         model.double()
         likelihood.double()
@@ -64,17 +67,6 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
         likelihood.train()
 
         mll = gpytorch.mlls.VariationalELBO(likelihood, model, num_data=train_y.size(0))
-
-        for i in range(training_iter):
-            minibatch_iter = tqdm(train_loader, desc='MiniBatch', leave=False)
-
-            for x_batch, y_batch in minibatch_iter:
-                optimizer.zero_grad()
-                output = model(x_batch)
-                loss = -mll(output, y_batch)
-                minibatch_iter.set_postfix(loss=loss.item())
-                loss.backward()
-                optimizer.step()
 
     else:
         model.train()
@@ -96,10 +88,37 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
             ))
 
             optimizer.step()
+    
+    model_state = machine_name + '_' + time_aggregation + '.pth'
+    
+    torch.save(
+        model.state_dict(), 
+        os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
+            model_state
+        )))
+    
+    #state_dict = torch.load(
+    #    os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
+    #        model_state
+    #    )))
 
-    func_preds_mean_inv, func_preds_var_inv, observed_preds, mse, mape \
-        = posterior_inference(train_x, train_y, test_x, test_y, model, \
-        likelihood, n_train)
+    #print(state_dict)
+
+    #model.load_state_dict(state_dict)
+    
+    #print(model.state_dict())
+    #traced_model.save(
+    #    os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
+    #    model_trace
+    #)))
+
+    #traced_model.save('traced_exact_gp.pt')
+
+    model.eval()
+    likelihood.eval()
+
+    func_preds_mean_inv, func_preds_var_inv, observed_preds, mse, mape, out_sample_ace, \
+        out_sample_pinball = posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_train)
     
     elapsed_time = time.time() - start_time
     
@@ -120,6 +139,8 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
             optimizer='Adam',
             out_sample_mse=mse,
             out_sample_mape=mape,
+            out_sample_ace=out_sample_ace,
+            out_sample_pinball=out_sample_pinball,
             elapsed_time=elapsed_time
         )
     else:
@@ -166,6 +187,10 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
         rmse = np.sqrt(mse)
         cv_rmse = np.mean(test_y_inv.numpy()) * rmse
 
+        out_sample_ace, out_sample_pinball = probability_metrics(
+            preds_mean=test_preds.numpy(), lower=lower_preds.numpy(), upper=upper_preds.numpy(), 
+            ground_truth=test_y_inv.numpy())
+
         interpolation_extrapolation(
             orig_time_train, train_y_inv, observed_preds_inv, n_train, upper_inv,
             lower_inv, test_y_inv, orig_time_test, orig_time)
@@ -177,33 +202,19 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
         quality_control(
             preds_mean=observed_preds_inv[:n_train], lower=lower_inv[:n_train],
             upper=upper_inv[:n_train], ground_truth=train_y_inv, 
-            orig_time=orig_time_train)
+            orig_time=orig_time_train, test_preds=test_preds, test_lower=lower_preds,
+            test_upper=upper_preds, test_truth=test_y_inv, test_time=orig_time_test)
 
         forecasted_consumption(
             preds_mean=test_preds, test_time=orig_time_test, 
             lower_inv=lower_inv[n_train:], upper_inv=upper_inv[n_train:])
-
-        #mahalanobis_distance(
-        #    covar_matrix=func_preds, ground_truth=observed_preds_inv,
-        #   orig_time=orig_time, n_train=n_train)
     
-        # Save the model's state as .pth type
-    
-    model_state = machine_name + '_' + time_aggregation + '.pth'
-    torch.save(
-        model.state_dict(), 
-        os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
-            model_state
-        )))
+        model_state = machine_name + '_' + time_aggregation + '.pth'
 
-    #traced_model.save(
-    #    os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
-    #    model_trace
-    #)))
 
-    #traced_model.save('traced_exact_gp.pt')
+    print(out_sample_ace, out_sample_pinball)
 
-    return func_preds_mean_inv, func_preds_var_inv, observed_preds, mse, mape
+    return func_preds_mean_inv, func_preds_var_inv, observed_preds, mse, mape, out_sample_ace, out_sample_pinball
 
 
 def interpolation_extrapolation(orig_time_train, train_y_inv, observed_preds_inv, 
@@ -248,8 +259,8 @@ upper_inv, lower_inv, test_y_inv):
             color='darkgrey'
             )
 
-        perf_dev_upper, perf_dev_lower = performance_deviation(
-        train_y_inv, test_y_inv, orig_time_train, lower_inv[:n_train], 
+        perf_dev_upper, perf_dev_lower = performance_deviation_training(
+        train_y_inv, observed_preds_inv[:n_train], orig_time_train, lower_inv[:n_train], 
         upper_inv[:n_train]
         )
         
@@ -275,7 +286,7 @@ upper_inv, lower_inv, test_y_inv):
         plt.show()
 
 
-def performance_deviation(train_y_inv, test_y_inv, time, lower_inv, upper_inv):
+def performance_deviation_training(train_y_inv, observed_preds_inv, time, lower_inv, upper_inv):
     """
     Find values that lie outside of the confidence region
 
@@ -305,6 +316,8 @@ def performance_deviation(train_y_inv, test_y_inv, time, lower_inv, upper_inv):
 
     out_of_conf_upper_vals = ground_truth[out_of_conf_upper_idx]
     out_of_conf_upper_time = orig_time[out_of_conf_upper_idx]
+    out_of_conf_upper_preds = observed_preds_inv[out_of_conf_upper_idx]
+    
 
     perf_dev_upper = {}
     for val, time in zip(out_of_conf_upper_vals, out_of_conf_upper_time):
@@ -321,20 +334,93 @@ def performance_deviation(train_y_inv, test_y_inv, time, lower_inv, upper_inv):
     for val, time in zip(out_of_conf_lower_vals, out_of_conf_lower_time):
         perf_dev_lower[time] = val
 
+    # Training Registry
+    pdd_registry = pd.DataFrame(list(perf_dev_upper.items()), columns=['time', 'actual'])
+    pdd_registry['machine'] = machine_name
+    print(pdd_registry)
 
-    print('Abnormal High Energy Consumption')
-    print('---------------------------------')
-    for time, val in perf_dev_upper.items():
-        print(time, val)
+    # Tesing Registry
 
-    print('\n') 
 
-    print('Abnormal Low Energy Consumption')
-    print('---------------------------------')
-    for time, val in perf_dev_lower.items():
-        print(time, val) 
 
     return perf_dev_upper, perf_dev_lower
+
+
+def performance_deviation_testing(test_y_inv, test_preds, test_time, test_lower, test_upper):
+    """
+    Find values that lie outside of the confidence region
+
+    Parameters
+    ----------
+    train_y_inv: training kW values
+    time: original training time values
+    lower_inv: training lower bound kW values
+    upper_inv: training upper bound kW values
+
+    Returns
+    -------
+    perf_dev_upper: dict of times and values of energy consumption greater than 
+    2 $\sigma$
+    perf_dev_lower: dict of times and values of energy consumption less than 
+    2 $\sigma$
+    """
+
+    test_time = np.array(test_time)
+
+    #ground_truth = np.concatenate([train_y_inv.numpy(), test_y_inv.numpy()])
+    ground_truth = test_y_inv.numpy()
+    test_preds = test_preds.numpy()
+
+    # Upper
+    out_of_conf_upper_idx = np.array(
+        np.where(ground_truth > test_upper.numpy())).flatten()
+
+    out_of_conf_upper_vals = ground_truth[out_of_conf_upper_idx]
+    out_of_conf_upper_time = test_time[out_of_conf_upper_idx]
+    out_of_conf_upper_preds = test_preds[out_of_conf_upper_idx]
+    out_of_conf_upper_upper = test_upper.numpy()[out_of_conf_upper_idx]
+    
+
+    perf_dev_upper = {}
+    for val, time, pred, upper in zip(
+        out_of_conf_upper_vals, out_of_conf_upper_time, 
+        out_of_conf_upper_preds, out_of_conf_upper_upper):
+        perf_dev_upper[time] = [val, pred, upper]
+
+    # Lower
+    out_of_conf_lower_idx = np.array(
+        np.where(ground_truth < test_lower.numpy())).flatten()
+    
+    out_of_conf_lower_vals = ground_truth[out_of_conf_lower_idx]
+    out_of_conf_lower_time = test_time[out_of_conf_lower_idx]
+    out_of_conf_preds = test_preds[out_of_conf_lower_idx]
+    out_of_conf_lower_lower = test_lower.numpy()[out_of_conf_lower_idx]
+ 
+    perf_dev_lower = {}
+    for val, time, pred, lower in zip(
+        out_of_conf_lower_vals, out_of_conf_lower_time, 
+        out_of_conf_preds, out_of_conf_lower_lower):
+        perf_dev_lower[time] = [val, pred, lower]
+
+    # Testing Registry
+    pdd_registry_upper = pd.DataFrame(list(perf_dev_upper.items()), columns=['time', 'values'])
+    pdd_registry_upper['machine'] = machine_name
+    pdd_registry_upper['control_limit'] = 'upper'
+
+    pdd_registry_lower = pd.DataFrame(list(perf_dev_lower.items()), columns=['time', 'values'])
+    pdd_registry_lower['machine'] = machine_name
+    pdd_registry_lower['control_limit'] = 'lower'
+
+    pdd_registry_testing = pd.concat([pdd_registry_upper, pdd_registry_lower], axis=0).reset_index()
+    
+    split_df = pd.DataFrame(
+        pdd_registry_testing['values'].to_list(),
+        columns=['actual_kw', 'expected_kw', 'bound'])
+
+    pdd_registry_testing_final = pd.concat([pdd_registry_testing, split_df], axis=1)
+    pdd_registry_testing_final.drop('values', axis=1, inplace=True)
+
+    print(pdd_registry_testing_final)
 
 
 def forecasted_consumption(preds_mean, test_time, lower_inv, upper_inv):
@@ -357,9 +443,17 @@ def forecasted_consumption(preds_mean, test_time, lower_inv, upper_inv):
     # Duration of high energy consumption
 
     # Total kW expected to consume with +/-
-    mean_total_energy = torch.sum(preds_mean*0.5).numpy()
-    lower_total_energy = torch.sum(lower_inv*0.5).numpy()
-    upper_total_energy = torch.sum(upper_inv*0.5).numpy()
+    if time_aggregation == '30T':
+        mean_total_energy = torch.sum(preds_mean*0.5).numpy()
+        lower_total_energy = torch.sum(lower_inv*0.5).numpy()
+        upper_total_energy = torch.sum(upper_inv*0.5).numpy()
+    elif time_aggregation == '10T':
+        mean_total_energy = torch.sum(preds_mean*0.1).numpy()
+        lower_total_energy = torch.sum(lower_inv*0.1).numpy()
+        upper_total_energy = torch.sum(upper_inv*0.1).numpy()
+    else:
+        raise ValueError('Code kWh conversion for lower time aggregation')
+        
 
     # Plot out-of-sample prediction
     fig, ax = plt.subplots(figsize=(16, 7))
@@ -385,7 +479,8 @@ def forecasted_consumption(preds_mean, test_time, lower_inv, upper_inv):
     return mean_total_energy, upper_total_energy, lower_total_energy
 
 
-def quality_control(preds_mean, upper, lower, ground_truth, orig_time):
+def quality_control(preds_mean, upper, lower, ground_truth, orig_time,
+test_preds, test_upper, test_lower, test_truth, test_time):
     """
     ## Within CI (2 stddev) ##
 
@@ -398,6 +493,10 @@ def quality_control(preds_mean, upper, lower, ground_truth, orig_time):
     If truth < lower, then truth - lower = negative value
     """
 
+    performance_deviation_testing(
+        test_y_inv=test_truth, test_preds=test_preds, test_time=test_time,
+        test_lower=test_lower, test_upper=test_upper)
+
     deviation = ground_truth.numpy() - preds_mean.numpy()
     deviation_upper = ground_truth.numpy() - upper.numpy()
     deviation_lower = ground_truth.numpy() - lower.numpy()
@@ -405,30 +504,68 @@ def quality_control(preds_mean, upper, lower, ground_truth, orig_time):
     upper = np.argwhere(deviation_upper > 0.0)
     lower = np.argwhere(deviation_lower < 0.0)
 
-    plt.figure(figsize=(16, 7))
-    plt.scatter(orig_time, deviation, alpha=0.5)
-    plt.scatter(orig_time[upper], deviation[upper], color='red')
-    plt.scatter(orig_time[lower], deviation[lower], color='red')
-    plt.title('Quality Control - {} Energy Performance Deviations'.format(machine_name))
-    plt.ylabel('kW (difference in predicted vs. actual)')
-    plt.legend([
+    fig, ax = plt.subplots(nrows=2, sharex=True, figsize=(16, 12))
+    
+    ax[0].scatter(orig_time, deviation, alpha=0.5)
+    ax[0].scatter(orig_time[upper], deviation[upper], color='red')
+    ax[0].scatter(orig_time[lower], deviation[lower], color='red')
+    ax[0].set_title('Training Energy Performance Deviations')
+    ax[0].set_ylabel('kW (difference in predicted vs. actual)')
+    ax[0].legend([
         'Actual kW - Predicted kW', 'Upper and Lower Control Limit +/- $2 \sigma$'])
+
+    ax[1].scatter(orig_time, np.cumsum(deviation), alpha=0.5)
+    ax[1].plot(orig_time, pd.Series(np.cumsum(deviation)).rolling(6).mean(), color='orange')
+    ax[1].plot(orig_time, pd.Series(np.cumsum(deviation)).rolling(60).mean(), color='green')
+    ax[1].set_title('Training Energy Performance Cumulative Deviations', size=14)
+    ax[1].set_ylabel('kW (Cumulative difference in predicted vs. actual)', size=14)
+    ax[1].set_xlabel('Time (Month - Day - Hour)', size=14)
+    ax[1].legend(['1hr Moving Average', '6hr Moving Average', 'Cumulative Deviations'])
+
     plt.show()
 
-    plt.figure(figsize=(16, 7))
-    plt.plot(orig_time, np.cumsum(deviation))
-    plt.plot(orig_time, pd.Series(np.cumsum(deviation)).rolling(10).mean())
-    plt.title('Quality Control - Energy Performance Cumulative Deviations')
-    plt.ylabel('kW (Cumulative difference in predicted vs. actual)')
-    plt.legend(['Cumulative Deviations', 'Moving Average'])
+    test_deviation = test_truth.numpy() - test_preds.numpy()
+    test_deviation_upper = test_truth.numpy() - test_upper.numpy()
+    test_deviation_lower = test_truth.numpy() - test_lower.numpy()
+
+    test_upper = np.argwhere(test_deviation_upper > 0.0)
+    test_lower = np.argwhere(test_deviation_lower < 0.0)
+
+    fig, ax = plt.subplots(nrows=2, sharex=True, figsize=(16, 12))
+
+    ax[0].scatter(test_time, test_deviation, alpha=0.5)
+    ax[0].scatter(test_time[test_upper], test_deviation[test_upper], color='red')
+    ax[0].scatter(test_time[test_lower], test_deviation[test_lower], color='red')
+    ax[0].set_title('Energy Performance Deviations', size=14)
+    ax[0].set_ylabel('kW (difference in predicted vs. actual)', size=14)
+    ax[0].legend([
+        'Actual kW - Predicted kW', 'Upper and Lower Control Limit +/- $2 \sigma$'])
+
+   
+    ax[1].scatter(test_time, np.cumsum(test_deviation), alpha=0.5)
+    ax[1].plot(test_time, pd.Series(np.cumsum(test_deviation)).rolling(6).mean(), color='orange')
+    #ax[1].plot(test_time, pd.Series(np.cumsum(test_deviation)).rolling(60).mean(), color='green')
+    ax[1].set_title('Energy Performance Cumulative Deviations', size=14)
+    ax[1].set_ylabel('kW (Cumulative difference in predicted vs. actual)', size=14)
+    ax[1].set_xlabel('Time (Month - Day - Hour)', size=14)
+    ax[1].legend(['1hr Moving Average', 'Cumulative Deviations'])
+    
     plt.show()
 
+  
+def probability_metrics(preds_mean, upper, lower, ground_truth):
+    """
+    """
 
-def mahalanobis_distance(covar_matrix, ground_truth, orig_time, n_train):
+    mean_pb_loss = mean_pinball_loss(ground_truth, preds_mean)
 
+    indicator = []
+    for x, low, up in zip(ground_truth, lower, upper):
+        if x <= up and x >= low:
+            indicator.append(1)
+        else:
+            indicator.append(0)
 
-    inverse_covar = linalg.inv(covar_matrix.covariance_matrix)
+    ace = sum(indicator) / len(ground_truth)
 
-    dist = ground_truth - covar_matrix.mean
-    left = np.dot(dist, inverse_covar)
-    mahal_dist = np.dot(left, dist.T)
+    return ace, mean_pb_loss

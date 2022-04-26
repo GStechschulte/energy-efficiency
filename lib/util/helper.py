@@ -189,48 +189,19 @@ def weekday_time_series(sensor_id):
 
     return weekday_df
 
-def update_gam_metrics(model, tau, add_regressor, trend, out_sample_rmse, 
-in_sample_rmse):
-
-    score_table = 'metrics'
-
-    query = """
-        insert into {schema}.{score_table}
-        (model, tau, add_regressor, trend, out_sample_rmse, in_sample_rmse)
-        values
-        ('{model}', '{tau}', TRIM('{add_regressor}'), '{trend}', '{out_sample_rmse}',
-        '{in_sample_rmse}')
-    """
-
-    query = query.format(
-        schema=config['DB']['SCHEMA'],
-        score_table=score_table,
-        model=model,
-        tau=tau,
-        add_regressor=json.dumps(add_regressor),
-        trend=trend,
-        out_sample_rmse=out_sample_rmse,
-        in_sample_rmse=in_sample_rmse
-    )
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute(query)
-    conn.commit()
-
 
 def update_gp_metrics(model, time_agg, kernel, lr, training_iter, optimizer, out_sample_mse, 
-out_sample_mape, elapsed_time):
+out_sample_mape, out_sample_ace, out_sample_pinball, elapsed_time):
 
     score_table = 'gp_metrics'
 
     query = """
         insert into {schema}.{score_table}
         (model, time_agg, kernel, lr, training_iter, optimizer, out_sample_mse, out_sample_mape,
-        elapsed_time)
+        out_sample_ace, out_sample_pinball, elapsed_time)
         values
         ('{model}', '{time_agg}', TRIM('{kernel}'), '{lr}', '{training_iter}', '{optimizer}', 
-        '{out_sample_mse}', '{out_sample_mape}', '{elapsed_time}')
+        '{out_sample_mse}', '{out_sample_mape}', '{out_sample_ace}', '{out_sample_pinball}', '{elapsed_time}')
     """
 
     query = query.format(
@@ -244,6 +215,8 @@ out_sample_mape, elapsed_time):
         optimizer=optimizer,
         out_sample_mse=out_sample_mse,
         out_sample_mape=out_sample_mape,
+        out_sample_ace=out_sample_ace,
+        out_sample_pinball=out_sample_pinball,
         elapsed_time=elapsed_time
     )
 
