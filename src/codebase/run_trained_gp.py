@@ -1,9 +1,13 @@
 import os
+from re import L
 import torch
 import gpytorch
+import numpy as np
 from exact_gp import ExactGPModel
 import data_utils
 import kernel_utils
+from sklearn.metrics import mean_absolute_percentage_error, \
+    mean_squared_error, mean_pinball_loss
 
 class Experiments:
 
@@ -16,6 +20,9 @@ class Experiments:
     
 
     def get_data(self):
+        """
+        Fetch testing data (6hr windows?) 
+        """
         
         X_train, y_train, X_test, y_test, n_train = data_utils.gp_preprocess(
             machine=self.machine, 
@@ -23,7 +30,7 @@ class Experiments:
             normalize_time=True,
         )
 
-        return X_train, y_train, X_test, y_test
+        return X_train, y_train, X_test, y_test, n_train
         
     
     def load_model_state(self):
@@ -32,7 +39,7 @@ class Experiments:
         path_model_state = cwd + '/src/saved_models/'
 
         self.state_dict = torch.load(
-            path_model_state + 'Entsorgung_10T.pth')
+            path_model_state + 'entsorgung_10T.pth') ## change to variable
 
         return self.state_dict
     
@@ -40,13 +47,11 @@ class Experiments:
     def load_kernel(self):
 
         self.kernel_function = kernel_utils.entsorgung_kernel()
-
-        return self.kernel_function
     
     def load_model(self):
         
-        self.X_train, self.y_train, self.X_test,self.y_test = self.get_data()
-        kernel_function = self.load_kernel()
+        self.X_train, self.y_train, self.X_test, self.y_test, self.n_train = self.get_data()
+        self.load_kernel()
 
         self.likelihood = gpytorch.likelihoods.GaussianLikelihood()
 
@@ -54,37 +59,76 @@ class Experiments:
             train_x=self.X_train, train_y=self.y_train, 
             likelihood=self.likelihood, kernel=self.kernel_function)
 
+        print('\n', 'Base Model: Before Loading Learned Parameters')
+        
+        for param_name, param in self.model.named_parameters():
+            print(f'Parameter name: {param_name:42} value = {param.item()}')
+
         self.model.load_state_dict(self.load_model_state())
+
+        print('\n', 'Base Model: After Loading Learned Parameters')
+
+        for param_name, param in self.model.named_parameters():
+            print(f'Parameter name: {param_name:42} value = {param.item()}')
 
         return self
 
-
-    def perform_training(self):
+    def inference(self):
         
-        self.model.train()
-        self.likelihood.train()
+        self.model.eval()
+        self.likelihood.eval()
+        
+        with torch.no_grad(), gpytorch.settings.fast_pred_var():
 
-        # Loss function for GPs
-        mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.likelihood, self.model)
-        # Optimization method --> Adam
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
+            func_preds = self.model(self.X_test)
+            observed_preds = self.likelihood(self.model(self.X_test))
+            lower, upper = observed_preds.confidence_region()
 
-        for i in range(self.training_iter):
-            optimizer.zero_grad()
-            output = self.model(self.X_train)
-            loss = -mll(output, self.y_train)
-            loss.backward()
+        # Transform inputs and outputs back to original scales
+        train_y_inv, test_y_inv, observed_preds_inv, func_preds_mean_inv, func_preds_var_inv, \
+        lower_inv, upper_inv, orig_time, orig_time_train, orig_time_test = \
+        data_utils.gp_inverse_transform(
+        self.y_train, self.y_test, observed_preds, func_preds, lower, upper)
 
-            print('Iter {} , Loss = {} , Noise = {}'.format(
-            i+1, loss, self.model.likelihood.noise.item() 
-            ))
+        self.test_preds = observed_preds_inv[self.n_train:]
+        self.lower_preds = lower_inv[self.n_train:]
+        self.upper_preds = upper_inv[self.n_train:]
 
-            optimizer.step()
+        print(func_preds.mean)
+
+        self.scoring(ground_truth=test_y_inv)
 
 
-    
-    def plot_model(self):
+    def scoring(self, ground_truth): ## import this function
+        
+        mean_pb_loss = mean_pinball_loss(ground_truth, self.test_preds)
+
+        indicator = []
+        for x, low, up in zip(ground_truth, self.lower_preds, self.upper_preds):
+            if x <= up and x >= low:
+                indicator.append(1)
+            else:
+                indicator.append(0)
+
+        ace = sum(indicator) / len(ground_truth)
+
+        mse = mean_squared_error(ground_truth.numpy(), self.test_preds.numpy())
+        mape = mean_absolute_percentage_error(ground_truth.numpy(), self.test_preds.numpy())
+
+        print('\n', 'Evaluation Metrics')
+        print('-'*20)
+        print('MSE       = ', round(mse, 4))
+        print('RMSE      = ', round(np.sqrt(mse)))
+        print('MAPE      = ', round(mape, 4))
+        print('ACE       = ', round(ace, 4))
+        print('Pinball   = ', round(mean_pb_loss, 4))
+
+
+
+    def plot_model(self): ## import this function
         print('plotting results')
+
+
 
 
 if __name__ == "__main__":
@@ -94,4 +138,4 @@ if __name__ == "__main__":
         time_agg=10
     )
 
-    exp.load_model().perform_training()
+    exp.load_model().inference()
