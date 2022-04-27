@@ -1,19 +1,21 @@
 import os
-from re import L
+#from re import L
 import torch
 import gpytorch
 import numpy as np
 from exact_gp import ExactGPModel
 import data_utils
 import kernel_utils
-from sklearn.metrics import mean_absolute_percentage_error, \
-    mean_squared_error, mean_pinball_loss
+from scoring import scoring_metrics
+#import plot_results
+
 
 class Experiments:
 
     def __init__(self, machine, time_agg) -> None:
         
         self.machine = machine
+        self.machine_name = machine + '_' + str(time) + 'T'
         self.time_agg = time_agg
         self.training_iter = 100
         self.lr = 0.1
@@ -21,16 +23,13 @@ class Experiments:
 
     def get_data(self):
         """
-        Fetch testing data (6hr windows?) 
+        
         """
         
-        X_train, y_train, X_test, y_test, n_train = data_utils.gp_preprocess(
-            machine=self.machine, 
+        self.X_train, self.y_train, self.X_test, self.y_test, self.n_train = data_utils.gp_preprocess(
+            machine=self.machine_name, 
             freq=self.time_agg,
-            normalize_time=True,
-        )
-
-        return X_train, y_train, X_test, y_test, n_train
+            normalize_time=True)
         
     
     def load_model_state(self):
@@ -39,18 +38,21 @@ class Experiments:
         path_model_state = cwd + '/src/saved_models/'
 
         self.state_dict = torch.load(
-            path_model_state + 'entsorgung_10T.pth') ## change to variable
+            path_model_state + self.machine_name +'.pth')
 
         return self.state_dict
     
 
     def load_kernel(self):
 
-        self.kernel_function = kernel_utils.entsorgung_kernel()
+        self.kernel_function = kernel_utils.main(
+            machine=self.machine, time=self.time_agg
+            )
+    
     
     def load_model(self):
         
-        self.X_train, self.y_train, self.X_test, self.y_test, self.n_train = self.get_data()
+        self.get_data()
         self.load_kernel()
 
         self.likelihood = gpytorch.likelihoods.GaussianLikelihood()
@@ -94,48 +96,34 @@ class Experiments:
         self.lower_preds = lower_inv[self.n_train:]
         self.upper_preds = upper_inv[self.n_train:]
 
-        print(func_preds.mean)
+        #print(func_preds.mean)
 
         self.scoring(ground_truth=test_y_inv)
 
 
-    def scoring(self, ground_truth): ## import this function
+    def scoring(self, ground_truth):
         
-        mean_pb_loss = mean_pinball_loss(ground_truth, self.test_preds)
+        scoring_metrics(
+            ground_truth=ground_truth,
+            test_preds=self.test_preds,
+            upper_preds=self.upper_preds,
+            lower_preds=self.lower_preds)
+        
 
-        indicator = []
-        for x, low, up in zip(ground_truth, self.lower_preds, self.upper_preds):
-            if x <= up and x >= low:
-                indicator.append(1)
-            else:
-                indicator.append(0)
-
-        ace = sum(indicator) / len(ground_truth)
-
-        mse = mean_squared_error(ground_truth.numpy(), self.test_preds.numpy())
-        mape = mean_absolute_percentage_error(ground_truth.numpy(), self.test_preds.numpy())
-
-        print('\n', 'Evaluation Metrics')
-        print('-'*20)
-        print('MSE       = ', round(mse, 4))
-        print('RMSE      = ', round(np.sqrt(mse)))
-        print('MAPE      = ', round(mape, 4))
-        print('ACE       = ', round(ace, 4))
-        print('Pinball   = ', round(mean_pb_loss, 4))
-
-
-
-    def plot_model(self): ## import this function
-        print('plotting results')
+    #def plot_experiments(self): 
+    #    plot_results.main()
 
 
 
 
 if __name__ == "__main__":
 
+    machine = str(input('Enter machine name:'))
+    time = int(input('Enter time aggregation (10 or 30):'))
+
     exp = Experiments(
-        machine='entsorgung_10T',
-        time_agg=10
+        machine=machine,
+        time_agg=time
     )
 
     exp.load_model().inference()
