@@ -1,5 +1,7 @@
 import torch
 import gpytorch
+from scripts import plot_results
+from scripts import run_experiments
 
 
 class Experiments:
@@ -9,6 +11,10 @@ class Experiments:
         self.machine = machine
         self.time_agg = time_agg
     
+
+    def plot_experiments():
+        plot_results.main()
+
 
     def load_model_state(self):
         print('loading model state')
