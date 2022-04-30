@@ -43,7 +43,7 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
     time_aggregation = time_agg
 
     start_time = time.time()
-
+    
     #likelihood = gpytorch.likelihoods.FixedNoiseGaussianLikelihood(noise=0.005)
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
 
@@ -56,10 +56,10 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
         likelihood,
         kernel_gen
     )
-
+    
     #for param_name, param in model.named_parameters():
     #    print(f'Parameter name: {param_name:42} value = {param.item()}')
-    
+    """
     if time_agg == '5T' or time_agg == '1T':
         model.double()
         likelihood.double()
@@ -88,31 +88,39 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
             ))
 
             optimizer.step()
+    """
+
     
     model_state = machine_name + '_' + time_aggregation + '.pth'
     
-    torch.save(
-        model.state_dict(), 
-        os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
-            model_state
-        )))
-    
-    #state_dict = torch.load(
+    #torch.save(
+    #    model.state_dict(), 
     #    os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
-    #        model_state
-    #    )))
+    #        model_state)))
+    
+    state_dict = torch.load(
+        os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
+            model_state)))
 
-    #print(state_dict)
+    #likelihood = gpytorch.likelihoods.GaussianLikelihood()
+    #model = ExactGPModel(
+    #    train_x,
+    #    train_y,
+    #    likelihood,
+    #    kernel_gen)
 
-    #model.load_state_dict(state_dict)
+    print(state_dict)
+    model.load_state_dict(state_dict)
     
     #print(model.state_dict())
+
     #traced_model.save(
     #    os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
     #    model_trace
     #)))
-
     #traced_model.save('traced_exact_gp.pt')
+    #model.train()
+    
 
     model.eval()
     likelihood.eval()
@@ -161,7 +169,7 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
     -------
     """
 
-    with torch.no_grad(), gpytorch.settings.fast_pred_var(), gpytorch.settings.trace_mode():
+    with torch.no_grad(), gpytorch.settings.fast_pred_var():
 
         model.eval()
         likelihood.eval()
@@ -209,8 +217,16 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
             preds_mean=test_preds, test_time=orig_time_test, 
             lower_inv=lower_inv[n_train:], upper_inv=upper_inv[n_train:])
     
-        model_state = machine_name + '_' + time_aggregation + '.pth'
+    #model_state = machine_name + '_' + time_aggregation + '.pth'
+    
+    #torch.save(
+    #    model.state_dict(), 
+    #    os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
+    #        model_state)))
+    
 
+    #print(state_dict)
+    #model.load_state_dict(state_dict)
 
     print(out_sample_ace, out_sample_pinball)
 
