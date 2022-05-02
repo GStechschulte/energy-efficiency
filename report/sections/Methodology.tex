@@ -10,7 +10,19 @@ Why do we have access to uncertainty?
 
 \subsection{Definition and Characteristics of Time Series}
 
-A time series is a sequential set of data points indexed by time $t$ with some output $y$. It is typically defined as a set of vectors $y(t), t = 0, 1, 2,. . .,n$ where $t$ represents the time elapsed and $y$ is the output. A time series is \textit{univariate} if it consists of single observations recorded over equal periods of time. For example, monthly CO2 measurements is a \textit{univariate} time series. Furthermore, more variables may be added to a time series to make it \textit{multivariate}. A \textit{multivariate} time series consists of multiple time-dependent variables where each variable may also have some dependency on other the variables. Time series can also be discrete or continuous. Continuous time series are recorded at every instance of time, even when the measured variable can only take a discrete set of values (company sales, number of unemployed persons). Discrete time series are when observations are taken only at specific times, usually equally spaced, even if the measured variable is a continuous variable. In this thesis, a continuous time series is discretized by aggregating the time series into equally spaced intervals of 10 and 30 minutes upon which the continuous variable (Watts) is anaylzed. 
+A time series is a sequential set of data points indexed by time $t$ with some output $y$. It is typically defined as a set of vectors $y(t), t = 0, 1, 2,. . .,n$ where $t$ represents the time elapsed and $y$ is the output. A time series is \textit{univariate} if it consists of single observations recorded over equal periods of time. For example, monthly CO2 measurements is a \textit{univariate} time series. Furthermore, more variables may be added to a time series to make it \textit{multivariate}. A \textit{multivariate} time series consists of multiple time-dependent variables where each variable may also have some dependency on other the variables. Time series can also be discrete or continuous. Continuous time series are recorded at every instance of time, even when the measured variable can only take a discrete set of values (company sales, number of unemployed persons). Discrete time series are when observations are taken only at specific times, usually equally spaced, even if the measured variable is a continuous variable. In this thesis, a continuous time series is discretized by aggregating the time series into equally spaced intervals of 10 and 30 minutes upon which the continuous variable (Watts) is analyzed. 
+
+Within a time series, there are typically four components to be considered which may influence the analysis or modeling. Not all time series contain all four components, and certain models are aimed at modeling time series with only a subset of these components. Thus, the exploratory data analysis (EDA) and subsequent model selection are important phases of time series analysis. Below, the main components of a time series are defined.
+
+\textbf{Trend}: A trend is a general tendency of a time series to increase, decrease or stagnate over time \cite{Applied Time Series Analysis}. For example, global warming, a time series referring to the global temperature, exhibits an increasing trend. 
+
+\textbf{Seasonal}: Seasonality is when a time series is influenced by seasonal factors (e.g., the quarter of the year, the month, or day of the week). Time series longer in duration may have multiple seasonality components. For example, airline data on the number of passengers flying exhibits multiple seasonality—vacation and holiday periods \cite{Applied Time Series Analysis}.
+
+\textbf{Cyclical}: The cyclical variation in a time series describes data that exhibits rises and falls that are \textit{not of fixed period}. The duration of a cycle depends on the type of industry or business being analyzed. For example, electrical load profiles of residential buildings often exhibit a cyclical pattern as the demand for energy \textit{cycles} throughout the day, but is typically not of a fixed period, i.e., people continue living in the building for a long period of time. 
+
+\textbf{Irregular}: This component is unpredictable. Every time series has some unpredictable component that makes it a random variable. In prediction, the objective is to “model” all the components to the point that the only component that remains unexplained is the random component. This component is also sometimes called the \textit{residual}. 
+
+In this thesis, it is expected that the industrial equipment will show a strong cyclical pattern as the loads of the equipment will be influenced by production process schedules; in turn influenced by the "business week". In \hyperlink{section.4.2}{section 4.2}, an exploratory analysis will be conducted to visualize the components of the machine's time series. 
 
 
 \subsection{Introduction to Gaussian Processes for Time Series}
@@ -92,9 +104,13 @@ In \hyperlink{section.5.2}{section 5.2}, the experimentation setup pertaining to
 
 As outlined above, the kernel design is a vital step in GP model design and offers an opportunity to incorporate domain knowledge into the model. Below, a few kernels and their hyperparameters that will be useful in modeling non-linear time series will be introduced and subsequently, an explanation on how to compose kernels through addition or multiplication will be provided.
 
+\subsubsection{Squared Exponential Kernel}
+
 First, the \textit{squared exponential} or \textit{radial basis function} ($RBF$) kernel is one of the most widely used kernels for real-valued inputs. Notably, the $RBF$ is a stationary kernel that encodes a high degree of smoothness in the function space, and hence can be used to design a GP which produces functions that can be smooth,
 
-$$K_{RBF} = \sigma^2 exp(-\frac{||x_i - x_j||}{2 \ell^2})$$
+\begin{equation}
+    K_{RBF} = \sigma^2 exp(-\frac{||x - x'||}{2 \ell^2})
+\end{equation}
 
 where $\ell$ is the lengthscale and controls the "wiggliness" of the function and $\sigma^2$ is the overall variance / outputscale  ($\sigma$ is also known as the amplitude) of the function. In \hyperlink{figure.1}{Figure 1} below, three functions are sampled and visualized from an RBF kernel; each with different length and outputscale values.
 
@@ -105,11 +121,15 @@ where $\ell$ is the lengthscale and controls the "wiggliness" of the function an
 \caption{Three samples, each from an $RBF$ kernel with different hyperparameters denoted by the table legend. Notice how $\ell$ affects the smoothness of the function.}
 \end{figure}
 
+\subsubsection{Periodic Kernel}
+
 The \textit{periodic} ($Per$) kernel captures repeating structures, which can model seasonalities influenced by business cycles and or human behavior. For example, home electricity consumption often displays daily seasonalities. The \textit{periodic} kernel has the form
 
-$$K_{per} = exp(-\frac{2}{\ell^2} sin^2 (\pi \frac{r}{p}))$$
+\begin{equation}
+K_{per} = exp(-\frac{2}{\ell^2} sin^2 (\pi \frac{r}{p}))
+\end{equation}
 
-where $p$ is the period. Again, $\ell$ and $\sigma^2$ are the lengthscale and outputscale respectively. \hyperlink{figure.2}{Figure 2} below visualizes the repeating structures of the $Per$ kernel. Important in this thesis is how the period is chosen. In a time series, the correlation between any pair of outputs can be analyzed empirically using the Auto-correlation Function (ACF). The ACF compares the time series with itself at a certain lag. Namely:
+where $p$ is the period. Again, $\ell$ and $\sigma^2$ are the lengthscale and outputscale respectively. \hyperlink{figure.2}{Figure 2} below visualizes the repeating structures of the $Per$ kernel. Important in this thesis is how the period is chosen. In a time series, the correlation between any pair of outputs can be analyzed empirically using the autocorrelation function (ACF). The ACF compares the time series with itself at a certain lag. Namely:
 
 \begin{figure}[htp]
 \centering
@@ -118,15 +138,27 @@ where $p$ is the period. Again, $\ell$ and $\sigma^2$ are the lengthscale and ou
 \caption{Three samples, each from a $Per$ kernel with different hyperparameters denoted by the table legend. Notice how $p$ affects the periodicity of the function and $\ell$ affects the "wiggliness" of the variations.}
 \end{figure}
 
-$$x + y + z$$
+\begin{equation}
+    \hat{p}(k) = \frac{\sum_{s=1}^{n-k}(x_{s+k} - \bar{x})(x_s - \bar{x})}{\sum_{t=1}^{n-k}(x_t - \bar{x})^2} 
+\end{equation}
 
-Thus, using the ACF, the interval of periods that show significant auto-correlation are chosen as the prior belief for the time series seasonality. Increasing the period $p$ increases the distance between repetitions. \textbf{Figure #.#} below shows an example of the ACF for the paper disposal machine.
+Thus, using the ACF coefficients, the interval of periods that show significant autocorrelations are chosen as the prior belief for the time series cyclical period length. Increasing the period $p$ increases the distance between repetitions. \hyperlink{figure.3}{Figure 3} below shows an example of the ACF correlogram for the paper disposal machine and how one can use the coefficients at certain lags as a prior belief for modeling the cyclical component. 
+
+\begin{figure}[htp]
+\centering
+\graphicspath{ {./images/} }
+\includegraphics[scale=0.49]{images/entsorgung_acf.png}
+\caption{Entsorgung ACF. The time series is discretized and averaged at 1hr intervals. Therefore, the ACF shows significant autocorrelations between $10$ and $12$ hours and $22$ and $24$ hours with the remaining lags decreasing in amplitude and significance.}
+\end{figure}
+
+\subsubsection{Rational Quadratic Kernel}
 
 The \textit{Rational Quadratic} ($RQ$) kernel can be interpreted as the sum of many $RBF$ kernels of different lengthscales. Similar to the $RBF$, the $RQ$ kernel encodes smoothness in the function space, but with the additional flexibility of having both local variations and long term variations. 
+\begin{equation}
+    K_{RQ} = \sigma^2 exp(1 + \frac{(x - x')^2}{2\alpha \ell^2})
+\end{equation}
 
-$$K_{RQ} = \sigma^2 exp(1 + \frac{(x - x')^2}{2\alpha \ell^2})$$
-
-where $\alpha$, also known as the scale mixture, determines how much local variations from the smaller lengthscales contribute to the overall variation. By using this kernel, one can model non-periodic trends of the underlying physical process and interpret the hyperparameters $\ell$ as either a non-periodic hourly or daily trend depending on how large or small the value of $\ell$ is respectively. Three samples of the RQ kernel are visualized in \hyperlink{figure.3}{Figure 3}.
+where $\alpha$, also known as the scale mixture, determines how much local variations from the smaller lengthscales contribute to the overall variation. By using this kernel, one can model non-periodic trends of the underlying physical process and interpret the hyperparameters $\ell$ as either a non-periodic hourly or daily trend depending on how large or small the value of $\ell$ is respectively. Three samples of the RQ kernel are visualized in \hyperlink{figure.4}{Figure 4}.
 
 \begin{figure}[htp]
 \centering
@@ -135,14 +167,33 @@ where $\alpha$, also known as the scale mixture, determines how much local varia
 \caption{Three samples, each from a $RQ$ kernel with different hyperparameters denoted by the table legend. Notice how $\alpha$ affects the . . . of the function and $\ell$ affects the "wiggliness" of the variations.}
 \end{figure}
 
+\subsubsection{Kernel Composition}
 
+Kernels can also be combined through addition and multiplication given the result is a positive definite kernel. Therefore, by combining kernels, more complex covariance structures can be designed. The addition of two kernels $K_1(x, x')$ and $K_2(x, x')$ is analogous to the probabilistic "OR" operation, i.e., two points $x_1$ and $x_2$ are considered highly correlated if they are highly correlated in $K_1 \lor K_2$. The multiplication of the two kernels is analogous to the probabilistic "AND" operation, i.e,. two points $x_1$ and $x_2$ are considered highly correlated if they are highly correlated in $K_1 \land K_2$. The resulting kernel given by the addition or multiplication of the two kernels is given by:
 
+\begin{equation}
+    K(x, x') = K_1(x, x') + K_2(x, x')
+\end{equation}
+\begin{equation}
+    K(x, x') = K_1(x, x') * K_2(x, x')
+\end{equation}
 
-\textbf{Other}:
+\subsubsection{Locally Periodic Kernel}
 
-The main idea is as follows: we observe the function value at a fixed set of $N$ points, namely $y_n = f(x_n)$ for $n=1:N$, where $f$ is the unknown function. To predict the function value at a new point $x_*$, we have to compare how "similar" $x_*$ is to each of the $N$ training points. From there, we can predict that $f(x_*)$ is some weighted combinations of the $\{f(x_n)\}$ values.
+In time series analysis, the periodic structure of the underlying function may change and or may not be consistent over time. For example, \textbf{figure #} shows a daily repeating cycle that changes its structure over the course of the week. Thus, one may want to incorporate this locally changing periodic structure "belief" into the kernel design. To do this, a \textit{locally periodic kernel} ($LocPer$) is introduced. The $LocPer$ kernel is a product of the $K_{RBF}$ and $K_{Per}$:
 
-Fitting a GP requires one to specify the prior mean (typically as constant or zero) and a kernel function, conditioned on the observed data, and then conduct an optimization loop over the hyper-parameters.
+\begin{equation}
+    K_{LocPer} = \sigma^2 exp (-\frac{2sin^2(\pi(x - x') / p}{\ell_{Per}^2}exp(-\frac{(x - x')^2}{\ell_{RBF}^2}))
+\end{equation}
+
+The periodic component correlates points that are far away from each other, but still in the same phase of a cycle. The $K_{RBF}$ decorrelates the two points and how quickly the points are decorrelated is determined by the hyperparameter $\ell_{RBF}$. Remember, $ell_{RBF}$ determines the "wiggliness" of the function; therefore smaller $\ell_{RBF}$ corresponds to faster changing periodic cycles and vice versa. The $K_{LocPer}$ is of use in modeling industrial machine equipment energy consumption as production processes are typically influenced by human behavior. Below, in \hyperlink{figure.5}{Figure 5}, three samples are generated from a $LocPer$ kernel.
+
+\begin{figure}[htp]
+\centering
+\graphicspath{ {./images/} }
+\includegraphics[scale=0.49]{images/samples_locper_prior.png}
+\caption{Three samples, each from a $LocPer$ kernel with different hyperparameters denoted by the table legend. Notice how the product of the two kernels results in a periodic structure with variations in each cycle.}
+\end{figure}
 
 
 \subsection{Advantages and Disadvantages of Gaussian Processes}
