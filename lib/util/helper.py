@@ -72,7 +72,7 @@ def query_table(table=None, add_params=None):
     if add_params is None:
         query = """
                 select
-                    *
+                    t, kw
                 from {}."{}"
         """.format(config['DB']['SCHEMA'], table)
 

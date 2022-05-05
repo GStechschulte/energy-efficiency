@@ -1,7 +1,5 @@
 # Energy-Efficiency-Thesis
 
-Code, works in progress, and supplemental information related to my master's thesis
-
 ## Reproduce the results
 
 1.) Clone the repo
@@ -13,6 +11,8 @@ Code, works in progress, and supplemental information related to my master's the
 3.) Run the script
 
 `python src run_trained_gp.py`
+
+You will be asked to enter a machine and the time aggregation you would like to analyze.
 
 ## Directories
 

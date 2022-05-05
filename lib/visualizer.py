@@ -8,24 +8,12 @@ import seaborn as sns
 def visualize_daily(agg):
 
     config = helper.get_config()
+    table_names = helper.get_sensor_map(dataset='gassmann')
 
-    query = """
-    select
-        table_name
-    from 
-        information_schema.tables
-    where 
-        table_name not like '%H%'
-    and 
-        table_name not like '%T%'
-    and 
-        table_name like 'g_%'
-    """
-
-    table_names = pd.read_sql_query(query, helper.get_db_connection())
     machine_kw = {}
 
-    for table in table_names.to_numpy():
+    for table in table_names.values():
+        print(table)
 
         if agg == 'avg':
             query = """
@@ -43,10 +31,10 @@ def visualize_daily(agg):
                 group by k."t") p
             group by date_part('day', p."t")
             order by day;
-            """.format(config['DB']['SCHEMA'], table[0])
+            """.format(config['DB']['SCHEMA'], table)
 
             df_kw = pd.read_sql_query(query, helper.get_db_connection())
-            machine_kw[table[0]] = list(df_kw.avg_kwh_day)
+            machine_kw[table] = list(df_kw.avg_kwh_day)
 
         elif agg == 'sum':
             query = """
@@ -64,10 +52,10 @@ def visualize_daily(agg):
                 group by k."t") p
             group by date_part('day', p."t")
             order by day;
-            """.format(config['DB']['SCHEMA'], table[0])
+            """.format(config['DB']['SCHEMA'], table)
 
             df_kw = pd.read_sql_query(query, helper.get_db_connection())
-            machine_kw[table[0]] = list(df_kw.sum_kw_day)
+            machine_kw[table] = list(df_kw.sum_kw_day)
 
     return machine_kw
 
@@ -75,7 +63,9 @@ def visualize_daily(agg):
 def visualize_hourly(single_machine=False):
 
     config = helper.get_config()
-    hourly_table_names = helper.get_table_names(time='1H')
+    #hourly_table_names = helper.get_table_names(time='1H')
+    table_names = helper.get_sensor_map(dataset='gassmann')
+
     machine_hourly_kw = {}
 
     if single_machine == True:
@@ -83,19 +73,23 @@ def visualize_hourly(single_machine=False):
         select
         """
     else:
-        for table in hourly_table_names:
+        for table in table_names.values():
+            print(table)
             query = """
             select
                 date_part('hour', g."t") as hour,
-                avg(kw) as avg_kw
-            from
-                {}.{} g
+                avg(g.kw) as avg_kw
+            from (
+                select
+                    t,
+                    p / 1000 as kw
+                from {}.{}) g
             group by date_part('hour', g."t")
             order by hour
-            """.format(config['DB']['SCHEMA'], table[0])
+            """.format(config['DB']['SCHEMA'], table)
 
             df_hourly_kw = pd.read_sql_query(query, helper.get_db_connection())
-            machine_hourly_kw[table[0]] = list(df_hourly_kw.avg_kw)
+            machine_hourly_kw[table] = list(df_hourly_kw.avg_kw)
         
         return machine_hourly_kw
 
@@ -128,6 +122,8 @@ def hourly_profile_heatmap(machine):
 
     plt.figure(figsize=(12, 8))
     sns.heatmap(hourly_profile)
+    plt.ylabel('Day of Week', fontsize=14)
+    plt.xlabel('Hour', fontsize=14)
     plt.title(machine + ' Hourly Load Heatmap')
 
 
