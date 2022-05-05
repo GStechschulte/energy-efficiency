@@ -20,7 +20,7 @@ def get_config():
         return config
 
     config = configparser.ConfigParser()
-    #if local == True:
+
     config.read(os.path.join(
         os.path.dirname(__file__), '../../config/config.ini')
     )
