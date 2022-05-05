@@ -21,13 +21,17 @@ class gp_data:
         
         return self.original_time, self.time_vals_train, self.time_vals_test
     
+
     def get_orig_values(self):
 
         return self.y_train.numpy(), self.y_test.numpy(), self.n_train
-
-        self.X_train, self.y_train, self.X_test, \
-                self.y_test, self.n_train
+   
     
+    def get_preprocessed(self):
+        
+        return self.X_train_norm, self.y_train_scale, self.X_test_norm, \
+            self.y_test_scale, self.n_train
+
     
     def query_data(self):
         
@@ -110,9 +114,6 @@ class gp_data:
             self.y_test_scale = (
                 (self.y_test - self.y_train_mean) / (self.y_train_std))
 
-            #return self.X_train_norm, self.y_train_scale, self.X_test_norm, \
-            #    self.y_test_scale, self.n_train
-
         else:
             X = df['t'].values
             y = df['kw'].values
@@ -141,9 +142,6 @@ class gp_data:
             self.y_test_scale = (
                 (self.y_test - self.y_train_mean) / (self.y_train_std))
 
-            #return self.X_train_norm, self.y_train_scale, self.X_test_norm, \
-            #    self.y_test_scale, self.n_train
-
 
     def inverse_transform(self, observed_preds, lower, upper):
         """
@@ -164,23 +162,9 @@ class gp_data:
         Inverse transformed parameters
         """
 
-        # Target Variable inverse transform
-        #self.y_train_scale *= self.y_train_std
-        #self.y_train_scale += self.y_train_mean
-
-        #self.y_test_scale *= self.y_train_std
-        #self.y_test_scale += self.y_train_mean
-
         # Observed preds inverse transform
         observed_preds = observed_preds * self.y_train_std
         observed_preds += self.y_train_mean
-
-        # Func preds inverse transform
-        #func_preds_mean = func_preds.mean * self.y_train_std
-        #func_preds_mean += self.y_train_mean
-
-        #func_preds_var = func_preds.variance * self.y_train_std
-        #func_preds_var += self.y_train_mean
 
         # Confidence region inverse transform
         lower *= self.y_train_std
@@ -189,15 +173,3 @@ class gp_data:
         upper += self.y_train_mean
 
         return observed_preds.numpy(), lower.numpy(), upper.numpy()
-
-
-#def main(job):
-#    print('doing something')
-
-    
-
-
-
-
-#if __name__ == '__main__':
-#    main()

@@ -3,7 +3,7 @@ import torch
 import gpytorch
 from .exact_gp import ExactGPModel
 from .scoring import scoring_metrics
-from . import data_utils
+from .data_utils import gp_data
 from . import kernel_utils
 
 
@@ -39,12 +39,12 @@ def main(machine=str, time=int):
             machine=machine, time=time
             )
 
-    # Query data + preprocess
-    X_train, y_train, X_test, y_test, n_train = \
-        data_utils.gp_preprocess(
-            machine=machine_name, 
-            freq=time,
-            normalize_time=True)
+    # Initialize gp_data query, preprocessing, and get scaled data
+    data = gp_data(
+        machine=machine_name, freq=time, normalize_time=True
+        )
+    data.preprocessing()
+    X_train, y_train, X_test, y_test, n_train = data.get_preprocessed()
 
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
 
