@@ -59,7 +59,7 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
     
     #for param_name, param in model.named_parameters():
     #    print(f'Parameter name: {param_name:42} value = {param.item()}')
-    """
+    
     if time_agg == '5T' or time_agg == '1T':
         model.double()
         likelihood.double()
@@ -88,29 +88,19 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
             ))
 
             optimizer.step()
-    """
+    
 
     
     model_state = machine_name + '_' + time_aggregation + '.pth'
     
-    #torch.save(
-    #    model.state_dict(), 
-    #    os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
-    #        model_state)))
-    
-    state_dict = torch.load(
+    torch.save(
+        model.state_dict(), 
         os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
             model_state)))
-
-    #likelihood = gpytorch.likelihoods.GaussianLikelihood()
-    #model = ExactGPModel(
-    #    train_x,
-    #    train_y,
-    #    likelihood,
-    #    kernel_gen)
-
-    print(state_dict)
-    model.load_state_dict(state_dict)
+    
+    #state_dict = torch.load(
+    #    os.path.join(os.path.dirname(__file__), '../gpytorch_models/{}'.format(
+    #        model_state)))
     
     #print(model.state_dict())
 
