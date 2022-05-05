@@ -69,7 +69,7 @@ def hauptluftung_kernel(time) -> int:
         ))
 
     seasonal_rbf_long = ScaleKernel(
-        RQKernel()
+        RBFKernel()
         )
 
     locally_long_periodic = seasonal_periodic_long * seasonal_rbf_long
