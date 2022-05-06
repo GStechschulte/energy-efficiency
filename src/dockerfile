@@ -1,25 +1,13 @@
-# select a base image
+# select base image
 FROM python:3.8
 
 # Set working directory 
-RUN mkdir /model
 WORKDIR /model
 
-# Create conda environment from yaml file
-COPY environment.yml  .
-RUN conda env create -f environment.yml
+COPY requirements.txt .
 
-SHELL ["conda", "run", "-n", "env", "/bin/bash", "-c"]
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Activate environment
-RUN conda activate thesis
+COPY ./scripts ./scripts
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=TRUE
-ENV PYTHONDONTWRITEBYTECODE=TRUE
-#ENV PATH="/opt/program:${PATH}"
-
-# Set up the program in the image
-COPY /src /model
-
-ENTRYPOINT ["python", "/src/__main__.py"]
+CMD ["python", "./src"]
