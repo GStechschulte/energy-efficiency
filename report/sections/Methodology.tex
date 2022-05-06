@@ -22,7 +22,7 @@ Within a time series, there are typically four components to be considered which
 
 \textbf{Irregular}: This component is unpredictable. Every time series has some unpredictable component that makes it a random variable. In prediction, the objective is to “model” all the components to the point that the only component that remains unexplained is the random component. This component is also sometimes called the \textit{residual}. 
 
-In this thesis, it is expected that the industrial equipment will show a strong cyclical pattern as the loads of the equipment will be influenced by production process schedules; in turn influenced by the "business week". In \hyperlink{section.4.2}{section 4.2}, an exploratory analysis will be conducted to visualize the components of the machine's time series. 
+In this thesis, it is expected that the industrial equipment will show a strong cyclical pattern as the loads of the equipment will be influenced by production process schedules; in turn influenced by the "business week". In \hyperlink{subsection.4.2}{section 4.2}, an exploratory analysis will be conducted to visualize the components of the machine's time series. 
 
 
 \subsection{Introduction to Gaussian Processes for Time Series}
@@ -98,7 +98,7 @@ However, the marginal likelihood $p(y | \theta)$ is almost always intractable an
 log P(y | X, \theta) = -\frac{1}{2}y^T(K_{y} + \sigma_{n}^2)^{-1} - \frac{1}{2}log|K_{y} + \sigma_{n}^2| - \frac{n}{2} log(2\pi)
 \end{equation}
 
-In \hyperlink{section.5.2}{section 5.2}, the experimentation setup pertaining to the type of optimizer used, number of training iterations, and learning rate is given. Although the above is technical, GPs have an intuitive procedure for training and performing inference: encode prior beliefs with kernels $\rightarrow$ condition on what you have observed $\rightarrow$ optimizer parameters $\rightarrow$ use posterior predictive distribution for performing inference.
+In \hyperlink{subsection.5.2}{section 5.2}, the experimentation setup pertaining to the type of optimizer used, number of training iterations, and learning rate is given. Although the above is technical, GPs have an intuitive procedure for training and performing inference: encode prior beliefs with kernels $\rightarrow$ condition on what you have observed $\rightarrow$ optimizer parameters $\rightarrow$ use posterior predictive distribution for performing inference.
 
 \subsection{Covariance and Mean Functions}
 
@@ -235,7 +235,7 @@ To evaluate the performance of the model, the data set is first split into train
     
 \end{itemize}
 
-During the experimentation phase, as outlined in \hyperlink{section.5.2}{section 5.2}, different model and kernel designs were compared such that the better model was the one that minimized MSE, MAPE, RMSE, and Pinball loss, while subsequently maximizing ACE. Also, in this thesis, the metrics MSE, MAPE, and Pinball loss were computed using scikit-learn's metric library. Furthermore, ACE and RMSE were calculated from scratch. 
+During the experimentation phase, as outlined in \hyperlink{subsection.5.2}{section 5.2}, different model and kernel designs were compared such that the better model was the one that minimized MSE, MAPE, RMSE, and Pinball loss, while subsequently maximizing ACE. Also, in this thesis, the metrics MSE, MAPE, and Pinball loss were computed using scikit-learn's \cite{scikit-learn} metric library. Furthermore, ACE and RMSE were calculated from scratch. 
 
 
 

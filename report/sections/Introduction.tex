@@ -2,10 +2,44 @@
 
 \subsection{Motivation}
 
+\subsubsection{Industry Partner - CLEMAP}
+This thesis is in collaboration with CLEMAP (Clever Energy Mapping),\footnote[1]{https://en.clemap.ch/}, a company offering energy metering sensors that have the ability to collect a range of information such as voltage, current (40A to 6kA), active, reactive, and apparent power on each phase of a three phase load at a frequency up to 12 hertz (Hz). Complementing their hardware, CLEMAP also offers software products in the form of a data management platform and a software application to provide their customers with the energy data described above to act as a basis for analysis, and support and device management.
+
+CLEMAP’s sensors belong to Internet of Things (IoT), an emerging technology consisting of sensors embedded in physical objects that are linked through wired and wireless networks (routers), often using the internet protocol, e.g. using an IP address. In Industry 4.0, these IoT devices are enhancing the metering and sub-metering capabilities of industrial equipment and production processes by collecting not only granular, multi-measurement historical data sets, but also streaming data not previously available for real-time analysis \cite{iot-1}.
+
+With the advancements in sensor technology and increasing availability of large quantities of power-usage and energy consumption data from industrial equipment and commercial production, CLEMAP is looking to expand upon their portfolio of software based services, utilizing IoT, into energy efficiency (EE) based tools that analyze and monitor energy consumption and identify equipment or processes where energy is "wasted" and or "deviating" from their expected behavior.
+
+\subsubsection{Monitoring Energy Efficiency}
+
+First and foremost, what is energy efficiency? The terminology of EE is broad and definitions can differ from organization to organization and by economic sectors. The International Organization for Standardization (ISO) defines energy efficiency as a "ratio or other quantitative relationship between an output of performance, service, goods or energy, and an input of energy" \cite{ISO} while the International Energy Agency (IEA) and the World Energy Council (WEC) defines energy efficiency as a "reduction in the energy input of a given service or level of economic activity" \cite{iea-wec}. In the ISO definition, EE is a quantitative measure between an output and input \textit{as is}. Subsequently, the IEA and WEC defines EE as a quantitative measure \textit{given} a reduction in the energy input.
+
+In both of the organization definitions stated above, EE involves analyzing inputs and outputs which can be difficult in practice as it is not always clear what is defined or measured as an output. As well, IoT sensors are measuring only the device it was intended to measure. Thus, only logging measurements in regard to the inputs the physical device consumes. In this thesis, EE is defined as the amount of energy the equipment or production process consumes \textit{as is} for a given time period. It is important to note that in this work, the output of a machine is unknown.  
+
+Energy managers cite a number of benefits attributable to energy metering and monitoring. Fundamentally, they stem from the “you cannot manage what you do not measure” adage \cite{3M}. Building off of this adage, in regard to industry 4.0 and CLEMAP's ambitions, the motivation is to develop an energy consumption baseline for a subset of machines being monitored by CLEMAP's sensors. Being able to accurately model the underlying physical process of a machine is critical to assessing EE and productivity metrics. The development of a model prior to any energy intervention project, new production process or machine components is called an energy baseline model as it establishes an energy consumption baseline / benchmark \textit{as is}. 
+
+With the energy baseline model, at a certain time point, a machine's energy consumption is predicted and then compared to the actual value when the machine is measured at that time step. The difference between the prediction and actual value can be monitored and analyzed over time. Thus, creating value add in assuring the machines that are in production do not cause excessive negative externalities, high operating costs \cite{eea}, and are operating nominally. Additionally, a well established benchmark can help companies measure and improve their performance not only within the organization, but also to compare with benchmarks established by similar firms in their industry.
+
+\subsubsection{Machine Performance Deviation}
+
+Subsequently, in industry, once you have established a benchmark, and as a production manager or engineer wanting to employ better energy management practices, you want to know if a piece of machinery is deviating away from the benchmark. Complementing the energy baseline model, PDD can provide such information with the production manager's domain expertise by detecting if a machine is in an abnormal state, that is, consuming more or less energy than what was expected—compared to the benchmark. Not only can this provide insights into emerging patterns of excessive energy consumption, but it can also provide insights into machine degradation or failure \cite{online-fault-monitoring}. The economic aspect in the context of the equipment life cycle, for just maintenance and support for machine tools, accounts for 60 to 75\% of the total life cycle cost \cite{econ-costs}. Therefore, PDD can complement the energy baseline model throughout the entire machine life cycle.
+
+\subsubsection{Switzerland Energy Policy}
+In the Swiss industrial sector, large energy consuming and greenhouse gases (GHG) intensive companies are required to participate in the Swiss emission trading scheme (ETS), an accounting system to ensure companies have complied with statutory obligations and to auction off emissions. This system was introduced in 2008 and merged with the European Union (EU) ETS in 2020, along with a CO2 levy in order to curb GHG \cite{carbon_trading}. Larger companies which are not regulated by the ETS can enter into an agreement with the Federal Office, the canton, or third-party government mandated energy agencies to commit themselves to reduce GHG emissions; ultimately allowing them to be exempted from the CO2 levy and to obtain full or partial refund of the renewable energy network surcharge \cite{optional}. Demand side policy is motivating businesses to employ better energy management practices to not only reduce CO2 emissions, but to also reduce operating costs in the short and long run. 
+
 \subsection{Problem Statement}
+
+Per \hyperlink{subsection.1.2}{Section 1.2}, the development of an energy baseline model forms the foundation for monitoring machine EE and for identifying when a machine is deviating from nominal behavior. Using the data collected from CLEMAP's smart energy meters, what time period being modeled constitutes as the "best operating conditions" to act as a benchmark in which future values will be compared against? Secondly, referring to this benchmark, how can the energy baseline model also detect deviations in machine performance?
 
 \subsection{Research Questions and Hypothesis}
 
 \subsection{Project Scope and Scientific Contributions}
+
+\textbf{Project Scope}
+\begin{itemize}
+    \item Identify machines where an energy baseline model can be \textit{applied}
+    \item Model those machines using a hypothetical reporting period --> record evaluation metrics for determining the quality of the model
+    \item Use control charts to monitor EE over time and to visualize / detect abnormal consumption periods
+    \item Mock deployment --> Docker container the prediction "stage" of the software
+\end{itemize}
 
 \subsection{Organization of Thesis}
