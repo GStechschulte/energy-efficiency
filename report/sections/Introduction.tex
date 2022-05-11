@@ -28,18 +28,44 @@ In the Swiss industrial sector, large energy consuming and greenhouse gases (GHG
 
 \subsection{Problem Statement}
 
-Per \hyperlink{subsection.1.2}{Section 1.2}, the development of an energy baseline model forms the foundation for monitoring machine EE and for identifying when a machine is deviating from nominal behavior. Using the data collected from CLEMAP's smart energy meters, what time period being modeled constitutes as the "best operating conditions" to act as a benchmark in which future values will be compared against? Secondly, referring to this benchmark, how can the energy baseline model also detect deviations in machine performance?
+Per \hyperlink{subsection.1.2}{Section 1.2}, the development of an energy baseline model forms the foundation for monitoring machine EE and for identifying when a machine is deviating from nominal behavior. Using the measurement data from CLEMAP's smart energy meters, what time period being modeled constitutes as the "best operating conditions" to act as a benchmark in which future values will be compared against? Secondly, referring to this benchmark, how can the energy baseline model be utilized to also detect deviations in machine performance?
 
-\subsection{Research Questions and Hypothesis}
+\subsection{Research Questions}
 
-\subsection{Project Scope and Scientific Contributions}
+The following questions, outlined in the preliminary study, will be answered throughout the thesis and ultimately summarized in \hyperlink{section.7}{Section 7}. 
 
-\textbf{Project Scope}
+\begin{enumerate}
+
+    \item Smart energy meters only provide information in regard to inputs used by a piece of equipment and without access to "output" data from the sensors, how can a baseline EE or benchmark be estimated from energy data alone? Furthermore, how frequently should this benchmark be updated?
+    
+    \item Could additional data be added or engineered to enhance the solution to research question one such as production data, financial information, temporal aggregations, maintenance logs or weather data?
+    
+    \item What parameter learning architecture and tools are best suited for deploying the EEE and PDD models on streaming data?
+    
+    \item What cloud services and or open-source libraries are needed to productively and cost-effectively deploy the developed EEE and PDD model into production? 
+    
+    \item What regularization techniques are most effective for the EEE and PDD models in ensuring model performance on new, unseen data?
+    
+    \item Considering scalability and cost, what is the performance of the model deployment work flows and the cost factors associated with model deployment?
+    
+    \item Upon addressing research question one, can PDD methods, on top of EEE, be implemented to ensure benefits to that particular piece of equipment in the production process life cycle?
+    
+    \item What information from the results of the algorithms, hypothetically, needs to be transmitted back to the “production manager” in addressing questions one and seven so he/she can make informed production actions?
+    
+\end{enumerate}
+
+\subsection{Project Scope}
+
+The scope of the project consists of the following main objectives:
+
 \begin{itemize}
-    \item Identify machines where an energy baseline model can be \textit{applied}
-    \item Model those machines using a hypothetical reporting period --> record evaluation metrics for determining the quality of the model
-    \item Use control charts to monitor EE over time and to visualize / detect abnormal consumption periods
-    \item Mock deployment --> Docker container the prediction "stage" of the software
+    \item Identify machines being metered by CLEMAP where an energy baseline model can be applied.
+    \item With the given data, perform a series of experiments to model those machines using a hypothetical reporting period and perform predictions one day ahead.
+    \item Assess the quality of the model and select the best performing one according to a set of evaluation metrics—this model is then the energy baseline model
+    \item Use statistical process control (SPC) charts to monitor EE over time and to visualize / detect periods of deviations in performance. 
+    \item To prepare for a prototype deployment, create a docker container of the trained energy baseline models.
 \end{itemize}
 
 \subsection{Organization of Thesis}
+
+With the introduction, motivation, problem statement, and research questions now set, the remainder of the thesis is organized as follows: first, an overview and application of methods pertaining to EEE and PDD in industry is given. Next, building off of the related work, the methodology used in this thesis is presented along with the evaluation metrics to assess the quality of the model. Furthermore, advantages and disadvantages of the proposed methodology is given. Then, in \hyperlink{section.4}{Section 4}, the two data sets are introduced where an example of an exploratory data analysis (EDA) workflow is given for a particular machine within the CLEMAP client data set. Also, the similarity and differences between the open source and CLEMAP data is given. With the data set and proposed methodology now given, the results and a decomposition of the energy baseline model is described. Subsequently, in \hyperlink{section.6}{Section 6}, how to monitor EE and perform PDD using the energy baseline model is given. Lastly, a summary of the main results, answers to the research questions, and comparison and next steps of the current research is outlined.

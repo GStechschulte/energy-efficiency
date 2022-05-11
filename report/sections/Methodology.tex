@@ -14,13 +14,13 @@ A time series is a sequential set of data points indexed by time $t$ with some o
 
 Within a time series, there are typically four components to be considered which may influence the analysis or modeling. Not all time series contain all four components, and certain models are aimed at modeling time series with only a subset of these components. Thus, the exploratory data analysis (EDA) and subsequent model selection are important phases of time series analysis. Below, the main components of a time series are defined.
 
-\textbf{Trend}: A trend is a general tendency of a time series to increase, decrease or stagnate over time \cite{Applied Time Series Analysis}. For example, global warming, a time series referring to the global temperature, exhibits an increasing trend. 
+\textbf{Trend}: A trend is a general tendency of a time series to increase, decrease or stagnate over time \cite{tsa}. For example, global warming, a time series referring to the global temperature, exhibits an increasing trend. 
 
-\textbf{Seasonal}: Seasonality is when a time series is influenced by seasonal factors (e.g., the quarter of the year, the month, or day of the week). Time series longer in duration may have multiple seasonality components. For example, airline data on the number of passengers flying exhibits multiple seasonality—vacation and holiday periods \cite{Applied Time Series Analysis}.
+\textbf{Seasonal}: Seasonality is when a time series is influenced by seasonal factors (e.g., the quarter of the year, the month, or day of the week). Time series longer in duration may have multiple seasonality components. For example, airline data on the number of passengers flying exhibits multiple seasonality—vacation and holiday periods \cite{tsa}.
 
 \textbf{Cyclical}: The cyclical variation in a time series describes data that exhibits rises and falls that are \textit{not of fixed period}. The duration of a cycle depends on the type of industry or business being analyzed. For example, electrical load profiles of residential buildings often exhibit a cyclical pattern as the demand for energy \textit{cycles} throughout the day, but is typically not of a fixed period, i.e., people continue living in the building for a long period of time. 
 
-\textbf{Irregular}: This component is unpredictable. Every time series has some unpredictable component that makes it a random variable. In prediction, the objective is to “model” all the components to the point that the only component that remains unexplained is the random component. This component is also sometimes called the \textit{residual}. 
+\textbf{Irregular}: This component is unpredictable. Every time series has some unpredictable component that makes it a random variable. In prediction, the objective is to “model” all the components to the point that the only component that remains unexplained is the random component. This component is also sometimes called the \textit{residual} \cite{tsa}. 
 
 In this thesis, it is expected that the industrial equipment will show a strong cyclical pattern as the loads of the equipment will be influenced by production process schedules; in turn influenced by the "business week". In \hyperlink{subsection.4.2}{section 4.2}, an exploratory analysis will be conducted to visualize the components of the machine's time series. 
 
@@ -29,7 +29,7 @@ In this thesis, it is expected that the industrial equipment will show a strong 
 
 Gaussian Processes (GPs) belong to the family of \textit{Bayesian non-parametric models} and offer a principled, interpretable, and intuitively specified way for conducting probabilistic inference of non-linear time series. Non-parametric methods do not assume a fixed parametric form for the prediction function, but instead try to estimate the function itself (rather than the parameters) directly from the data. 
 
-GPs can be viewed as a generalization of a Gaussian distribution in $\mathbb{R^n}$ to a space of functions. More specifically, a GP is a way to define distributions over functions with the assumption that the function values at a set of $M > 0$ inputs, $f = [f(x_1), . . .,f(x_M)]$, is jointly Gaussian with a mean $(\mu = m(x_1), . . .,m(x_M))$ and covariance $\sum_{i, j} = K(x_i, x_j)$, where $m$ is the mean function and $K$ is a positive definite kernel. A positive definite kernel is a generalization of a positive definite matrix where. . .  . . . 
+GPs can be viewed as a generalization of a Gaussian distribution in $\mathbb{R^n}$ to a space of functions. More specifically, a GP is a way to define distributions over functions with the assumption that the function values at a set of $M > 0$ inputs, $f = [f(x_1), . . .,f(x_M)]$, is jointly Gaussian with a mean $(\mu = m(x_1), . . .,m(x_M))$ and covariance $\sum_{i, j} = K(x_i, x_j)$, where $m$ is the mean function and $K$ is a positive definite kernel. A positive definite kernel is a generalization of a positive definite matrix where the matrix is symmetric and all its eigenvalues are positive. 
 
 Thus, the two central components of a GP are the mean $m(x)$ and covariance kernel function $k(x_i, x_j)$. The former represents the value we expect for our function before seeing the data, and the latter, the beating heart of a GP, specifies the correlation between any pair of outputs and therefore determines the properties of the function that it generates. The kernel allows one to encode prior knowledge about the similarity of the two input vectors $x_i$ and $x_j$, i.e., if we know that $x_i$ is similar to $x_j$, then the model can be encouraged to make the predicted output at both locations $f(x_i)$ and $f(x_j)$ to be similar. As the problem in this thesis is concerned with time series, the informativeness of past observations in explaining current data is a function of how long ago the past observations were observed. The covariance matrix for a set of locations $x = \{x_1, x_2, . . .,x_n\}$ is defined as:
 
@@ -207,9 +207,20 @@ However, GPs also have disadvantages. Here, a couple of the main challenges are 
 To evaluate the performance of the model, the data set is first split into training and testing sets. The training set consists of four days of data where as the testing set consists of one days (24 hours) worth of data. Then, as GPs are probabilistic models, to evaluate model quality, not only should the accuracy of the model's predictions be computed, but also how precise the predictions are using the posterior predictive distribution. Thus, deterministic and probabilistic error metrics are used in this thesis. The following metrics are used to evaluate the performance and quality of the model: Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Mean Absolute Percentage Error (MAPE), Average Coverage Error (ACE), and Pinball Loss.
 
 \begin{itemize}
-    \item \textit{MSE}: 
-    \item \textit{RMSE}:
-    \item \textit{MAPE}:
+    \item \textit{MSE}: Also known as the average squared loss, measures the average squared distance the predictions are from the actual values. A larger MSE indicates that the data points are dispersed more widely around the mean, whereas a smaller MSE suggests the inverse. In regression, the smaller the MSE, the better. MSE is given by:
+    
+    $$\frac{1}{n}\sum_{i=1}^n(\hat{y} - y)^2$$
+    
+    \item \textit{RMSE}: Is the square root of MSE. The square root function turns the metric back into the same units as the dependent variable $y$. Again, the smaller the RMSE, the better and is defined as :
+    
+    $$\sqrt{\frac{1}{n}\sum_{i=1}^n(\hat{y} - y)^2}$$
+    
+    \item \textit{MAPE}: Measures the accuracy of the forecast as a percentage and offers an intuitive way to communicate the quality of a model to non-technical audiences. For example,  a $15\%$ MAPE would mean that, on average, the model is off the true value by $15\%$. The smaller the MAPE, the better, and is defined as:
+    
+    $$\frac{1}{n}\sum_{i=1}^n \frac{|A_t - F_t|}{A_t}$$
+    
+    where $A_t$ is the actual value and $F_t$ is the forecasted value. The absolute difference is then divided by the actual value $A_t$ to obtain a scale-independent measure. 
+    
     \item \textit{ACE}: Sampling functions from the posterior predictive distribution, one can obtain prediction intervals (PI). In this thesis, two standard deviations (95\%) is used. ACE measures the proportion of actual values within the PI and is bounded between $[0, 1]$:
     
     $$ I_t = 
