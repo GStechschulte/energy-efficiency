@@ -226,11 +226,13 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
 def interpolation_extrapolation(orig_time_train, train_y_inv, observed_preds_inv, 
 n_train, upper_inv, lower_inv, test_y_inv, orig_time_test, orig_time):
 
+    full = np.concatenate([train_y_inv.numpy(), test_y_inv.numpy()])
+    
     f, ax = plt.subplots(figsize=(16, 7))
-    training = ax.scatter(orig_time_train, train_y_inv.numpy(), s=[2.75], color='black')
+
+    data = ax.scatter(orig_time, full, s=[2.75], color='black')
     in_sample = ax.plot(
         orig_time_train, observed_preds_inv[:n_train].numpy(), marker='.')
-    testing = ax.scatter(orig_time_test, test_y_inv.numpy(), s=[2.75], color='black')
     out_sample = ax.plot(
         orig_time_test, observed_preds_inv[n_train:].numpy(), marker='.')
     
@@ -242,12 +244,12 @@ n_train, upper_inv, lower_inv, test_y_inv, orig_time_test, orig_time):
     'Interpolation', 'Extrapolation', 'Actual Data', 'Uncertainty: + / - $2 \sigma$'
     ])
 
+    plt.axvline(x='2021-10-15 00:00', linestyle='--', color='black')
+
     plt.xlabel('Time', fontsize=14)
     plt.ylim(bottom=-0.1)
     plt.ylabel('kW', fontsize=14)
-    plt.title(
-        'Machine: {} \n Time Aggregation: {}'.format(
-            machine_name, time_aggregation))
+    plt.title('$LocPer + RQ$')
     plt.show()
 
 
@@ -344,9 +346,6 @@ def performance_deviation_training(train_y_inv, observed_preds_inv, time, lower_
     pdd_registry = pd.DataFrame(list(perf_dev_upper.items()), columns=['time', 'actual'])
     pdd_registry['machine'] = machine_name
     print(pdd_registry)
-
-    # Tesing Registry
-
 
 
     return perf_dev_upper, perf_dev_lower
@@ -503,30 +502,42 @@ test_preds, test_upper, test_lower, test_truth, test_time):
         test_y_inv=test_truth, test_preds=test_preds, test_time=test_time,
         test_lower=test_lower, test_upper=test_upper)
 
-    deviation = ground_truth.numpy() - preds_mean.numpy()
-    deviation_upper = ground_truth.numpy() - upper.numpy()
-    deviation_lower = ground_truth.numpy() - lower.numpy()
+    deviation = ground_truth.numpy() - preds_mean.numpy() #instant.
+    deviation_upper = ground_truth.numpy() - upper.numpy() #instant.
+    deviation_lower = ground_truth.numpy() - lower.numpy() #instant.
 
     upper = np.argwhere(deviation_upper > 0.0)
     lower = np.argwhere(deviation_lower < 0.0)
+
+    cumsum_deviation = np.cumsum(ground_truth.numpy() - preds_mean.numpy()) 
+    cumsum_deviation_upper = np.cumsum(ground_truth.numpy() - upper) 
+    cumsum_deviation_lower = np.cumsum(ground_truth.numpy() - lower) 
+
+    cumsum_upper = np.argwhere(cumsum_deviation_upper > 0.0)
+    cumsum_lower = np.argwhere(cumsum_deviation_lower < 0.0)
 
     fig, ax = plt.subplots(nrows=2, sharex=True, figsize=(16, 12))
     
     ax[0].scatter(orig_time, deviation, alpha=0.5)
     ax[0].scatter(orig_time[upper], deviation[upper], color='red')
     ax[0].scatter(orig_time[lower], deviation[lower], color='red')
-    ax[0].set_title('Training Energy Performance Deviations')
-    ax[0].set_ylabel('kW (difference in predicted vs. actual)')
+    ax[0].set_title('Training Energy Performance Deviations', size=14)
+    ax[0].set_ylabel('kW (difference in predicted vs. actual)', size=14)
     ax[0].legend([
         'Actual kW - Predicted kW', 'Upper and Lower Control Limit +/- $2 \sigma$'])
 
-    ax[1].scatter(orig_time, np.cumsum(deviation), alpha=0.5)
+    ax[1].scatter(orig_time, cumsum_deviation, alpha=0.5)
+    ax[1].scatter(orig_time[cumsum_upper], cumsum_deviation[cumsum_upper], color='red')
+    ax[1].scatter(orig_time[cumsum_lower], cumsum_deviation[cumsum_lower], color='red')
     ax[1].plot(orig_time, pd.Series(np.cumsum(deviation)).rolling(6).mean(), color='orange')
     ax[1].plot(orig_time, pd.Series(np.cumsum(deviation)).rolling(60).mean(), color='green')
     ax[1].set_title('Training Energy Performance Cumulative Deviations', size=14)
     ax[1].set_ylabel('kW (Cumulative difference in predicted vs. actual)', size=14)
     ax[1].set_xlabel('Time (Month - Day - Hour)', size=14)
-    ax[1].legend(['1hr Moving Average', '6hr Moving Average', 'Cumulative Deviations'])
+    ax[1].legend(
+        ['1hr Moving Average', '6hr Moving Average', 'Cumulative Deviations',
+        'Upper and Lower Control Limit +/- $2 \sigma$'
+        ])
 
     plt.show()
 
@@ -536,6 +547,16 @@ test_preds, test_upper, test_lower, test_truth, test_time):
 
     test_upper = np.argwhere(test_deviation_upper > 0.0)
     test_lower = np.argwhere(test_deviation_lower < 0.0)
+
+    test_cumsum_deviation = np.cumsum(
+        test_truth.numpy() - test_preds.numpy()) 
+    test_cumsum_deviation_upper = np.cumsum(
+        test_truth.numpy() - test_preds.numpy()) 
+    test_cumsum_deviation_lower = np.cumsum(
+        test_truth.numpy() - test_preds.numpy()) 
+
+    test_cumsum_upper = np.argwhere(test_cumsum_deviation > test_cumsum_deviation_upper)
+    test_cumsum_lower = np.argwhere(test_cumsum_deviation < test_cumsum_deviation_lower)
 
     fig, ax = plt.subplots(nrows=2, sharex=True, figsize=(16, 12))
 
@@ -548,9 +569,14 @@ test_preds, test_upper, test_lower, test_truth, test_time):
         'Actual kW - Predicted kW', 'Upper and Lower Control Limit +/- $2 \sigma$'])
 
    
-    ax[1].scatter(test_time, np.cumsum(test_deviation), alpha=0.5)
+    ax[1].scatter(test_time, test_cumsum_deviation, alpha=0.5)
+    ax[1].scatter(
+        test_time[test_cumsum_upper], test_cumsum_deviation[test_cumsum_upper], 
+        color='red')
+    ax[1].scatter(
+        test_time[test_cumsum_lower], test_cumsum_deviation[test_cumsum_lower], 
+        color='red')
     ax[1].plot(test_time, pd.Series(np.cumsum(test_deviation)).rolling(6).mean(), color='orange')
-    #ax[1].plot(test_time, pd.Series(np.cumsum(test_deviation)).rolling(60).mean(), color='green')
     ax[1].set_title('Energy Performance Cumulative Deviations', size=14)
     ax[1].set_ylabel('kW (Cumulative difference in predicted vs. actual)', size=14)
     ax[1].set_xlabel('Time (Month - Day - Hour)', size=14)
