@@ -4,21 +4,17 @@
 
 1.) Clone the repo
 
-2.) Create new environment and download 
+2.) Build image
 
-`requirements.txt`
+3.) Run the container and model(s)
 
-3.) Run the script
+`docker run -i thesis-model`
 
-`python src run_trained_gp.py`
+You will be asked to enter a machine and the time aggregation you would like to analyze. Available time sampling is `10` and `30` minutes. The following devices have energy baseline models ready for inference:
 
-You will be asked to enter a machine and the time aggregation you would like to analyze.
-
-## Directories
-
-[clemap_api](clemap_api/) - Notebook for authenticating a new user
-
-[data_loader](data_loader/) - Python script for loading all the machine data into PostgreSQL
-
-[EDA](EDA/) - Contains visualizations of load profiles broken down by machine, day, and hour
-
+- Entsorgung
+- Hauptluftung
+- Gesamtmessung
+- UV EG
+- UV OG
+- EG
