@@ -1,4 +1,5 @@
 import configparser
+from multiprocessing.sharedctypes import Value
 import os
 import json
 import psycopg2
@@ -24,6 +25,7 @@ def get_config():
     config.read(os.path.join(
         os.path.dirname(__file__), '../../config/config.ini')
     )
+
     return config
 
 
@@ -68,6 +70,7 @@ def query_table(table=None, add_params=None):
     """
 
     config = get_config()
+    print(config['DB']['SCHEMA'])
 
     if add_params is None:
         query = """
@@ -82,13 +85,7 @@ def query_table(table=None, add_params=None):
 
         return df
     else:
-        #query = """
-        #        {query}
-        #"""
-        #query.format(query=add_params)
-        df = pd.read_sql_query(add_params, get_db_connection())
-
-        return df
+        raise ValueError('Additional query parameters cannot be added')
 
 
 def get_table_names(time=None):

@@ -27,7 +27,8 @@ def main(machine=str, time=int):
 
     # Directory path to saved model parameters
     cwd = os.getcwd()
-    path_model_state = cwd + '/src/saved_models/'
+    #path_model_state = cwd + '/src/saved_models/'
+    path_model_state = cwd + '/gp_scripts/saved_models/'
 
     # Load model parameters
     state_dict = torch.load(

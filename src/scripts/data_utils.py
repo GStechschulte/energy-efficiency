@@ -49,12 +49,6 @@ class gp_data:
 
 
     def preprocessing(self):
-        # Query table production weekday time series
-        #if bool(re.findall('trockner', self.machine)) \
-        #    or bool(re.findall('uv_sigma_line', self.machine)):
-        #    df = db_helper.query_table(table=self.machine)  
-        #else:
-        #    df = db_helper.weekday_time_series(sensor_id=self.machine)
 
         df = self.query_data()
 
