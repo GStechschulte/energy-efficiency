@@ -527,8 +527,10 @@ test_preds, test_upper, test_lower, test_truth, test_time):
         'Actual kW - Predicted kW', 'Upper and Lower Control Limit +/- $2 \sigma$'])
 
     ax[1].scatter(orig_time, cumsum_deviation, alpha=0.5)
+
     ax[1].scatter(orig_time[cumsum_upper], cumsum_deviation[cumsum_upper], color='red')
     ax[1].scatter(orig_time[cumsum_lower], cumsum_deviation[cumsum_lower], color='red')
+
     ax[1].plot(orig_time, pd.Series(np.cumsum(deviation)).rolling(6).mean(), color='orange')
     ax[1].plot(orig_time, pd.Series(np.cumsum(deviation)).rolling(60).mean(), color='green')
     ax[1].set_title('Training Energy Performance Cumulative Deviations', size=14)
@@ -545,15 +547,15 @@ test_preds, test_upper, test_lower, test_truth, test_time):
     test_deviation_upper = test_truth.numpy() - test_upper.numpy()
     test_deviation_lower = test_truth.numpy() - test_lower.numpy()
 
-    test_upper = np.argwhere(test_deviation_upper > 0.0)
-    test_lower = np.argwhere(test_deviation_lower < 0.0)
+    test_vals_upper = np.argwhere(test_deviation_upper > 0.0)
+    test_vals_lower = np.argwhere(test_deviation_lower < 0.0)
 
     test_cumsum_deviation = np.cumsum(
         test_truth.numpy() - test_preds.numpy()) 
     test_cumsum_deviation_upper = np.cumsum(
-        test_truth.numpy() - test_preds.numpy()) 
+        test_truth.numpy() - test_upper.numpy()) 
     test_cumsum_deviation_lower = np.cumsum(
-        test_truth.numpy() - test_preds.numpy()) 
+        test_truth.numpy() - test_lower.numpy()) 
 
     test_cumsum_upper = np.argwhere(test_cumsum_deviation > test_cumsum_deviation_upper)
     test_cumsum_lower = np.argwhere(test_cumsum_deviation < test_cumsum_deviation_lower)
@@ -561,8 +563,8 @@ test_preds, test_upper, test_lower, test_truth, test_time):
     fig, ax = plt.subplots(nrows=2, sharex=True, figsize=(16, 12))
 
     ax[0].scatter(test_time, test_deviation, alpha=0.5)
-    ax[0].scatter(test_time[test_upper], test_deviation[test_upper], color='red')
-    ax[0].scatter(test_time[test_lower], test_deviation[test_lower], color='red')
+    ax[0].scatter(test_time[test_vals_upper], test_deviation[test_vals_upper], color='red')
+    ax[0].scatter(test_time[test_vals_lower], test_deviation[test_vals_lower], color='red')
     ax[0].set_title('Energy Performance Deviations', size=14)
     ax[0].set_ylabel('kW (difference in predicted vs. actual)', size=14)
     ax[0].legend([
@@ -570,12 +572,16 @@ test_preds, test_upper, test_lower, test_truth, test_time):
 
    
     ax[1].scatter(test_time, test_cumsum_deviation, alpha=0.5)
-    ax[1].scatter(
-        test_time[test_cumsum_upper], test_cumsum_deviation[test_cumsum_upper], 
-        color='red')
-    ax[1].scatter(
-        test_time[test_cumsum_lower], test_cumsum_deviation[test_cumsum_lower], 
-        color='red')
+
+
+    #ax[1].scatter(
+    #    test_time[test_cumsum_upper], test_deviation[test_cumsum_upper], 
+    #    color='red')
+    #ax[1].scatter(
+    #    test_time[test_cumsum_lower], test_deviation[test_cumsum_lower], 
+    #    color='red')
+
+        
     ax[1].plot(test_time, pd.Series(np.cumsum(test_deviation)).rolling(6).mean(), color='orange')
     ax[1].set_title('Energy Performance Cumulative Deviations', size=14)
     ax[1].set_ylabel('kW (Cumulative difference in predicted vs. actual)', size=14)
