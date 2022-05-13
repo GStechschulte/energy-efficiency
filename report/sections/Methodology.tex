@@ -198,9 +198,9 @@ The periodic component correlates points that are far away from each other, but 
 
 \subsection{Advantages and Disadvantages of Gaussian Processes}
 
-In this thesis, Gaussian Processes for time series was chosen as a principled way to: 1.) perform probabilistic inference, 2.) allow for an intuitive model interpretation by way of \textit{decomposition} of the kernels, and 3.) incorporate background information in the form of \textit{kernel design}. 
+In this thesis, Gaussian Processes for time series was chosen for the advantages to (1) perform non-parametric probabilistic inference to model non-linear time series, (2) allow for an intuitive model interpretation by way of \textit{decomposition} of the kernels, and (3) incorporate background information in the form of \textit{kernel design}.
 
-However, GPs also have disadvantages. Here, a couple of the main challenges are presented relating to use in Industry 4.0. First, GPs. . .
+However, GPs also have disadvantages. The main one being a result of the kernel $K$, that when performing inference and likelihood evaluation, to compute the weights, the method has a computational complexity of $\mathcal{O}(N^3)$. That is, the time complexity is cubic in the number of points $|N|$ \cite{pml1Book}. However, the open source software used in this thesis \cite{gardner2018gpytorch} for implementing Exact Gaussian Processes (ExactGP) is based on Blackbox Matrix-Matrix multiplication (BBMM) \cite{NEURIPS2018_27e8e171} to reduce the time complexity down to $\mathcal{O}(N^2)$. Another disadvantage of GPs is the choice of kernel design. Knowing which kernel to use to model the underlying process and how to compose them can be a challenging task. However, using other people's domain knowledge and other methods such as the ACF makes the task more manageable. 
 
 \subsection{Evaluation Metrics}
 
