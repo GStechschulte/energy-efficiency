@@ -1,5 +1,3 @@
-\subsection{Chapter Overview}
-
 \subsection{CLEMAP Client Dataset}
 
 The client of CLEMAP operates within the Swiss printing and media industry where the equipment has been fitted with state of the art CLEMAP sensors on a range of their production equipment. The machines, location, and purpose are described in Table 1:
@@ -36,9 +34,9 @@ The client of CLEMAP operates within the Swiss printing and media industry where
     \label{tab:my_label}
 \end{table}
 
-All machines and the main terminals are connected to an alternating current (AC) grid with three phases. Subsequently, the data collected is the phase, voltage (V), current (I), \textbf{s}, power (Watts), \textbf{q}, power factor (PF), \textbf{phi}. The measurements were originally collected at a frequency of $12$ hertz (Hz) from October $7^{th}$ until October $18^{th}$ for a total length of $10$ days. A three phase current at $12$Hz indicates that every second, there should be $12$ cycles being measured for each phase $1, 2$ and $3$. 
+All machines and the main terminals are connected to an alternating current (AC) grid with three phases. Subsequently, the data collected is the phase (L), voltage (V), current (I), \textbf{s}, power (Watts), \textbf{q}, power factor (PF), \textbf{phi}. The measurements were originally collected at a frequency of $12$ hertz (Hz) from October $7^{th}$ until October $18^{th}$ for a total length of $10$ days. A three phase current at $12$Hz indicates that every second, there should be $12$ cycles being measured for each phase $1, 2$ and $3$. 
 
-As outlined in \hyperlink{subsection.3.3}{Section 3.3}, and due to the GPyTorch Gaussian Process time complexity of $\mathcal{O}(n^2)$, the time series is discretized by aggregating the data into $10$ and $30$ minute intervals and taking the average value. This aggregation significantly reduces the length of the time series while still allowing for a more granular level of analysis compared to the current literature in \hyperlink{section.2}{Section 2}.
+As outlined in \hyperlink{subsection.3.3}{Section 3.3}, and due to the GPyTorch Gaussian Process time complexity of $\mathcal{O}(n^2)$, the time series is discretized by aggregating the data into $10$ and $30$ minute intervals and taking the average value. This aggregation significantly reduces the length of the original $12$Hz time series while still allowing for a more granular level of analysis compared to the current literature in \hyperlink{section.2}{Section 2}.
 
 \subsubsection{CLEMAP Exploratory Data Analysis}
 
@@ -53,7 +51,7 @@ Here, an introductory exploratory data analysis (EDA) is performed on some of th
 
 Using the meta data from \hyperlink{table.1}{Table 1} and the bar chart above, it is evident that machines on the ground, first, and second floor affect the energy being metered on their respective floors (UV 1.0G, etc.). Likewise, the meter on the main terminal is measuring all of the energy. The majority of the components being metered, with the exception of the trockner, uv sigma line and vk 1.UG, are effected by the hour of the day. In the system R707LV, the printer demanded little to no energy, while the remaining three components represent a large share of total energy demanded with the powder extraction machine consuming the most. Subsequently, in the XL106 system, the printer represents the majority of energy demanded by the system. 
 
-For the sake of brevity, only the EDA for the paper disposal machine (\hyperlink{figure.7}{Figure 7}) will be shown below. For a full machine analysis, please refer to the \textit{eda} directory on the experiments branch of the GitHub repository \cite{Stechschulte_Gaussian_Processes_for_2022}. 
+For the sake of brevity, only the EDA for the paper disposal machine (\hyperlink{figure.7}{Figure 7}) will be shown below. For a full machine analysis, please refer to the \path{eda} directory on the \path{experiments} branch of the GitHub repository \cite{Stechschulte_Gaussian_Processes_for_2022}. 
 
 \begin{figure}[h]
   \centering
@@ -82,7 +80,7 @@ Next, in \hyperlink{figure.9}{Figure 9}, a plot of the time series at a $10$ min
 \caption{Entire time series for the paper disposal machine.}
 \end{figure}
 
-Therefore, during the modeling phase, only the production week (2021-10-11 through 2021-10-15) is used. Using this time series, the periodicity is verified empirically using the ACF; as explained in \hyperlink{subsubsection.3.5.3}{Section 3.5.3}. Below, in \hyperlink{figure.10}{Figure 10}, the production week time series is visualized along with the respective ACF correlogram. Looking at the ACF and time series plot, the sub-daily and daily periodicity is verified at about $12$ and $24$ hours, respectively. Also, on some days, such as the $11^th$, $13^{th}$ and $14^{th}$, the load profile slowly tapers off compared to the other days. Furthermore, during non-operational hours, the machine seems to be "on" and in a "stand-by" mode.  
+Therefore, during the modeling phase, only the production week (2021-10-11 through 2021-10-15) is used. Using this time series, the periodicity is verified empirically using the ACF; as explained in \hyperlink{subsubsection.3.5.3}{Section 3.5.3}. Below, in \hyperlink{figure.10}{Figure 10}, the production week time series is visualized along with the respective ACF correlogram. Looking at the ACF and time series plot, the sub-daily and daily periodicity is verified at about $12$ and $24$ hours, respectively. Also, on some days, such as the $11^{th}$, $13^{th}$ and $14^{th}$, the load profile slowly tapers off compared to the other days. Furthermore, during non-operational hours, the machine seems to be "on" and in a "stand-by" mode.  
 
 \begin{figure}[H]
     \centering
@@ -138,7 +136,7 @@ Karlsruhe Institude of Technology (KIT) in Germany which operates an electronics
     \label{tab:my_label}
 \end{table}
 
-All machines and the main terminals are monitored using EEM-MA600 energy meters and are connected to an AC grid with three phases. The measurements are a three month time series of various electrical quantities, e.g., active and reactive power, voltage, frequency, and harmonic distortion at a five second resolution. As the goal is to evaluate the scalability and feasibility of the methods introduced in \hyperlink{section.2}{Section 2} and \hyperlink{section.3}{Section 3}, the EDA on the HIPE data is similar to that of the CLEMAP client dataset. Therefore, refer to the \textit{hipe load profiles} directory within the \textit{eda} directory on the experiments branch in the GitHub repository \cite{Stechschulte_Gaussian_Processes_for_2022}. 
+All machines and the main terminals are monitored using EEM-MA600 energy meters and are connected to an AC grid with three phases. The measurements are a three month time series of various electrical quantities, e.g., active and reactive power, voltage, frequency, and harmonic distortion at a five second resolution. As the goal is to evaluate the scalability and feasibility of the methods introduced in \hyperlink{section.2}{Section 2} and \hyperlink{section.3}{Section 3}, the EDA on the HIPE data is similar to that of the CLEMAP client dataset. Therefore, refer to the \path{hipe load profiles} directory within the \path{eda} directory on the  \path{experiments} branch in the GitHub repository \cite{Stechschulte_Gaussian_Processes_for_2022}. 
 
 \subsection{Similarity and Differences of Data Sources}
 

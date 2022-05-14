@@ -1,5 +1,3 @@
-\subsection{Chapter Overview}
-
 \subsection{The Bayesian Formulation of Predictions}
 
 As stated in chapter one and two, the quantification of uncertainty provides additional value in monitoring machine energy performance and evaluating whether or not a machine is deviating from the expected behavior. Motivated by this, the Bayesian framework will be used as uncertainty quantification is a central component, and as a result, we will have access to probability distributions over predictions instead of point predictions.
@@ -29,9 +27,9 @@ In this thesis, it is expected that the industrial equipment will show a strong 
 
 Gaussian Processes (GPs) belong to the family of \textit{Bayesian non-parametric models} and offer a principled, interpretable, and intuitively specified way for conducting probabilistic inference of non-linear time series. Non-parametric methods do not assume a fixed parametric form for the prediction function, but instead try to estimate the function itself (rather than the parameters) directly from the data. 
 
-GPs can be viewed as a generalization of a Gaussian distribution in $\mathbb{R^n}$ to a space of functions. More specifically, a GP is a way to define distributions over functions with the assumption that the function values at a set of $M > 0$ inputs, $f = [f(x_1), . . .,f(x_M)]$, is jointly Gaussian with a mean $(\mu = m(x_1), . . .,m(x_M))$ and covariance $\sum_{i, j} = K(x_i, x_j)$, where $m$ is the mean function and $K$ is a positive definite kernel. A positive definite kernel is a generalization of a positive definite matrix where the matrix is symmetric and all its eigenvalues are positive. 
+GPs can be viewed as a generalization of a Gaussian distribution in $\mathbb{R^n}$ to a space of functions. More specifically, a GP is a way to define distributions over functions with the assumption that the function values at a set of $M > 0$ inputs, $f = [f(x_1), . . .,f(x_M)]$, is jointly Gaussian with a mean $(\mu = m(x_1), . . .,m(x_M))$ and covariance $\sum_{i, j} = K(x_i, x_j)$, where $m$ is the mean function and $K$ is a positive definite kernel \cite{pml1Book}. A positive definite kernel is a generalization of a positive definite matrix where the matrix is symmetric and all its eigenvalues are positive. 
 
-Thus, the two central components of a GP are the mean $m(x)$ and covariance kernel function $k(x_i, x_j)$. The former represents the value we expect for our function before seeing the data, and the latter, the beating heart of a GP, specifies the correlation between any pair of outputs and therefore determines the properties of the function that it generates. The kernel allows one to encode prior knowledge about the similarity of the two input vectors $x_i$ and $x_j$, i.e., if we know that $x_i$ is similar to $x_j$, then the model can be encouraged to make the predicted output at both locations $f(x_i)$ and $f(x_j)$ to be similar. As the problem in this thesis is concerned with time series, the informativeness of past observations in explaining current data is a function of how long ago the past observations were observed. The covariance matrix for a set of locations $x = \{x_1, x_2, . . .,x_n\}$ is defined as:
+Thus, the two central components of a GP are the mean $m(x)$ and covariance kernel function $k(x_i, x_j)$. The former represents the value we expect for our function before seeing the data, and the latter, the beating heart of a GP, specifies the correlation between any pair of outputs and therefore determines the properties of the function that it generates. The kernel allows one to encode prior knowledge about the similarity of the two input vectors $x_i$ and $x_j$, i.e., if we know that $x_i$ is similar to $x_j$, then the model can be encouraged to make the predicted output at both locations $f(x_i)$ and $f(x_j)$ to be similar. As the problem in this thesis is concerned with time series, the informativeness of past observations in explaining current data is a function of how long ago the past observations were observed \cite{roberts_gaussian_2013}. The covariance matrix for a set of locations $x = \{x_1, x_2, . . .,x_n\}$ is defined as:
 
 \begin{equation}
 \mathbb{K(x, x') = \begin{pmatrix}
@@ -42,7 +40,7 @@ k(x_n, x_1) & k(x_n, x_2) & \dots & k(x_n, x_n)
 \end{pmatrix}}
 \end{equation}
 
-This means that the entire function evaluation, associated with points in $x$, is drawn from a multivariate Gaussian distribution:
+This means that the entire function evaluation, associated with points in $x$, is drawn from a multivariate Gaussian distribution \cite{roberts_gaussian_2013}:
 
 \begin{equation}
 p(y(x)) \sim \mathcal{N}(m(x), K(x, x'))
@@ -54,9 +52,9 @@ where $y = \{y_1, y_2,. . .,y_n\}$ are the dependent function values, evaluated 
 K(x, x') + \sigma^2I
 \end{equation}
 
-where $I$ is the identity matrix since noise is expected to be uncorrelated from sample to sample; hence noise only needs to be added to the diagonal of $K$. The $\sigma^2$ is a hyper-parameter representing the noise variance.
+where $I$ is the identity matrix since noise is expected to be uncorrelated from sample to sample; hence noise only needs to be added to the diagonal of $K$ \cite{roberts_gaussian_2013}. The $\sigma^2$ is a hyper-parameter representing the noise variance.
 
-A GP with a given \textit{mean function} $m$ and \textit{covariance function} $K$ is a prior that can generate functions; hence the common definition of a GP as "a prior distribution over functions". Now that the central components of a GP have been laid out, the following describes how to perform inference. To perform inference with GPs from some input (test data) $x_*$ given some training data $D = \{(x_i, y_i)\}$ assuming i.i.d additive Gaussian noise with variance $\sigma_{n}^2$, the prediction and observations are expressed as a joint distribution following the GP prior:
+A GP with a given \textit{mean function} $m$ and \textit{covariance function} $K$ is a prior that can generate functions; hence the common definition of a GP as "a prior distribution over functions". Now that the central components of a GP have been laid out, the following describes how to perform inference. To perform inference with GPs from some input (test data) $x_*$ given some training data $D = \{(x_i, y_i)\}$ assuming i.i.d additive Gaussian noise with variance $\sigma_{n}^2$, the prediction and observations are expressed as a joint distribution following the GP prior \cite{roberts_gaussian_2013}:
 
 \begin{equation}
 \begin{bmatrix} 
@@ -71,7 +69,7 @@ K(X_*, X) & K(X_*, X_*)
 
 where $y_*$ is some output test data and $X_*$ is the input test points. One can think of the evaluation of test points $X_*$ at new locations as \textit{augmenting} the observed data $X$ with the test data $X_*$ and $y_*$ in the joint distribution. 
 
-With the product rule, one can relate the joint distribution to the conditional distribution to obtain the posterior predictive distribution given by:
+With the product rule, one can relate the joint distribution to the conditional distribution to obtain the posterior predictive distribution \cite{pml1Book}:
 
 \begin{equation}
 p(f_* | X_*, X, y) = \mathcal{N}(f_* | m_*, \sum_*)
@@ -92,7 +90,7 @@ Gaussian Process models have a number of parameters $\theta$ (sometimes called h
 p(\theta | y) = \frac{p(y | \theta)p(y)}{p(y)}
 \end{equation}
 
-However, the marginal likelihood $p(y | \theta)$ is almost always intractable and we must therefore use approximation techniques. To find the \textit{most likely} hyperparameters, the marginal log-likelihood is maximized through gradient-based optimization and is given by the form:
+However, the marginal likelihood $p(y | \theta)$ is almost always intractable and we must therefore use approximation techniques \cite{pml1Book}. To find the \textit{most likely} hyperparameters, the marginal log-likelihood is maximized through gradient-based optimization and is given by the form:
 
 \begin{equation}
 log P(y | X, \theta) = -\frac{1}{2}y^T(K_{y} + \sigma_{n}^2)^{-1} - \frac{1}{2}log|K_{y} + \sigma_{n}^2| - \frac{n}{2} log(2\pi)
@@ -106,7 +104,7 @@ As outlined above, the kernel design is a vital step in GP model design and offe
 
 \subsubsection{Squared Exponential Kernel}
 
-First, the \textit{squared exponential} or \textit{radial basis function} ($RBF$) kernel is one of the most widely used kernels for real-valued inputs. Notably, the $RBF$ is a stationary kernel that encodes a high degree of smoothness in the function space, and hence can be used to design a GP which produces functions that can be smooth,
+First, the \textit{squared exponential} or \textit{radial basis function} ($RBF$) kernel is one of the most widely used kernels for real-valued inputs. Notably, the $RBF$ is a stationary kernel that encodes a high degree of smoothness in the function space \cite{pml1Book}, and hence can be used to design a GP which produces functions that can be smooth,
 
 \begin{equation}
     K_{RBF} = \sigma^2 exp(-\frac{||x - x'||}{2 \ell^2})
@@ -123,7 +121,7 @@ where $\ell$ is the lengthscale and controls the "wiggliness" of the function an
 
 \subsubsection{Periodic Kernel}
 
-The \textit{periodic} ($Per$) kernel captures repeating structures, which can model seasonalities influenced by business cycles and or human behavior. For example, home electricity consumption often displays daily seasonalities. The \textit{periodic} kernel has the form
+The \textit{periodic} ($Per$) kernel captures repeating structures \cite{pml1Book}, which can model seasonalities influenced by business cycles and or human behavior. For example, home electricity consumption often displays daily seasonalities. The \textit{periodic} kernel has the form
 
 \begin{equation}
 K_{per} = exp(-\frac{2}{\ell^2} sin^2 (\pi \frac{r}{p}))
@@ -153,7 +151,7 @@ Thus, using the ACF coefficients, the interval of periods that show significant 
 
 \subsubsection{Rational Quadratic Kernel}
 
-The \textit{Rational Quadratic} ($RQ$) kernel can be interpreted as the sum of many $RBF$ kernels of different lengthscales. Similar to the $RBF$, the $RQ$ kernel encodes smoothness in the function space, but with the additional flexibility of having both local variations and long term variations. 
+The \textit{Rational Quadratic} ($RQ$) kernel can be interpreted as the sum of many $RBF$ kernels of different lengthscales. Similar to the $RBF$, the $RQ$ kernel encodes smoothness in the function space, but with the additional flexibility of having both local variations and long term variations \cite{gp_prices}. 
 \begin{equation}
     K_{RQ} = \sigma^2 exp(1 + \frac{(x - x')^2}{2\alpha \ell^2})
 \end{equation}
@@ -169,7 +167,7 @@ where $\alpha$, also known as the scale mixture, determines how much local varia
 
 \subsubsection{Kernel Composition}
 
-Kernels can also be combined through addition and multiplication given the result is a positive definite kernel. Therefore, by combining kernels, more complex covariance structures can be designed. The addition of two kernels $K_1(x, x')$ and $K_2(x, x')$ is analogous to the probabilistic "OR" operation, i.e., two points $x_1$ and $x_2$ are considered highly correlated if they are highly correlated in $K_1 \lor K_2$. The multiplication of the two kernels is analogous to the probabilistic "AND" operation, i.e,. two points $x_1$ and $x_2$ are considered highly correlated if they are highly correlated in $K_1 \land K_2$. The resulting kernel given by the addition or multiplication of the two kernels is given by:
+Kernels can also be combined through addition and multiplication given the result is a positive definite kernel \cite{pml1Book}. Therefore, by combining kernels, more complex covariance structures can be designed. The addition of two kernels $K_1(x, x')$ and $K_2(x, x')$ is analogous to the probabilistic "OR" operation, i.e., two points $x_1$ and $x_2$ are considered highly correlated if they are highly correlated in $K_1 \lor K_2$. The multiplication of the two kernels is analogous to the probabilistic "AND" operation, i.e,. two points $x_1$ and $x_2$ are considered highly correlated if they are highly correlated in $K_1 \land K_2$. The resulting kernel given by the addition or multiplication of the two kernels is given by:
 
 \begin{equation}
     K(x, x') = K_1(x, x') + K_2(x, x')
@@ -180,7 +178,7 @@ Kernels can also be combined through addition and multiplication given the resul
 
 \subsubsection{Locally Periodic Kernel}
 
-In time series analysis, the periodic structure of the underlying function may change and or may not be consistent over time. For example, \textbf{figure #} shows a daily repeating cycle that changes its structure over the course of the week. Thus, one may want to incorporate this locally changing periodic structure "belief" into the kernel design. To do this, a \textit{locally periodic kernel} ($LocPer$) is introduced. The $LocPer$ kernel is a product of the $K_{RBF}$ and $K_{Per}$:
+In time series analysis, the periodic structure of the underlying function may change and or may not be consistent over time. For example, \textbf{figure #} shows a daily repeating cycle that changes its structure over the course of the week. Thus, one may want to incorporate this locally changing periodic structure "belief" into the kernel design \cite{gp_prices}. To do this, a \textit{locally periodic kernel} ($LocPer$) is introduced. The $LocPer$ kernel is a product of the $K_{RBF}$ and $K_{Per}$:
 
 \begin{equation}
     K_{LocPer} = \sigma^2 exp (-\frac{2sin^2(\pi(x - x') / p}{\ell_{Per}^2}exp(-\frac{(x - x')^2}{\ell_{RBF}^2}))
@@ -231,9 +229,9 @@ To evaluate the performance of the model, the data set is first split into train
     $$
     $$UC = \frac{1}{|T|}\sum_{t\inT}I_t$$
     
-    where $P_t$ is the actual value at time $t$, and $I_t$ is a binary indicator of whether the PI $ [\hat{L_t}, \hat{U_t}]$ contains $P_t$. Since ACE measures a proportion of the actual values contained by the PI, this proportion measures the discrepancy between the percentage of points contained by the PI and the confidence level (CI) of the PI; here two standard deviations represents a 95\% CI. However, ACE can be misleading due to the fact that a wide PI can cover all the actual data points—resulting in a high score. Therefore, ACE is complemented by the Pinball loss.
+    where $P_t$ is the actual value at time $t$, and $I_t$ is a binary indicator of whether the PI $ [\hat{L_t}, \hat{U_t}]$ contains $P_t$. Since ACE measures a proportion of the actual values contained by the PI, this proportion measures the discrepancy between the percentage of points contained by the PI and the confidence level (CI) of the PI; here two standard deviations represents a 95\% CI \cite{gp_prices}. However, ACE can be misleading due to the fact that a wide PI can cover all the actual data points—resulting in a high score. Therefore, ACE is complemented by the Pinball loss.
     
-    \item \textit{Pinball Loss}: Measures the sharpness of the PI which evaluates the precision of the prediction and how sharp (or tight) the PI is around the actual value. Pinball loss is defined as:
+    \item \textit{Pinball Loss}: Measures the sharpness of the PI which evaluates the precision of the prediction and how sharp (or tight) the PI is around the actual value \cite{gp_prices}. Pinball loss is defined as:
     
     $$ \text{Pinball}(q, t) = 
     \begin{cases}

@@ -1,5 +1,3 @@
-\subsection{Chapter Overview}
-
 \subsection{Experimentation Setup}
 
 An energy baseline model will be developed for the following machines, at $10$ and $30$ minute time aggregations, to analyze EE and perform PDD: main terminal, main ventilation, paper disposal, uv server room, and uv ground floor. The implementation of Gaussian Process Regression is with the open source package GPyTorch \cite{gardner2018gpytorch}; a highly efficient and modular implementation of GPs built on top of PyTorch, with graphical process unit (GPU) acceleration. 
@@ -61,23 +59,23 @@ Following the kernel decomposition, the evaluation metrics are queried from the 
      & $10$ & $K_{LocPer24} + K_{RQ}$ & $0.046$ & $0.117$ & $0.215$ & $0.99$ & $0.082$ \\
      & $30$ & $K_{LocPer24} + K_{RQ}$ & $0.032$ & $0.079$ & $0.179$ & $1.0$ & $0.062$ \\
      
-    Gesamtmessung 
+    Main terminal 
      & $10$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $169.354$ & $0.445$ & $13.014$ & $0.757$ & $4.913$ \\
      & $30$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $163.175$ & $0.447$ & $12.774$ & $0.771$ & $4.806$ \\
      
-    eg 
+    EG 
      & $10$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.582$ & $0.117$ & $1.607$ & $0.80$ & $0.455$ \\
      & $30$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.63$ & $0.115$ & $1.622$ & $0.792$ & $0.443$ \\
      
-    Hauptluftung 
+    HVAC 
      & $10$ & $K_{LocPer24} + K_{RQ}$ & $0.462$ & $0.132$ & $0.68$ & $0.931$ & $0.171$ \\
      & $30$ & $K_{LocPer24} + K_{RQ}$ & $0.287$ & $0.132$ & $0.536$ & $0.958$ & $0.173$ \\
      
-    og 1 
+    OG 1 
      & $10$ & $K_{LocPer24} + K_{RQ}$ & $0.195$ & $0.178$ & $0.441$ & $0.965$ & $0.146$ \\
      & $30$ & $K_{LocPer24} + K_{RQ}$ & $0.162$ & $0.155$ & $0.402$ & $0.912$ & $0.132$ \\
      
-    uv eg 
+    UV EG 
      & $10$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.599$ & $0.364$ & $1.612$ & $0.91$ & $0.457$ \\
      & $30$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.068$ & $0.296$ & $1.438$ & $0.917$ & $0.378$ \\
      

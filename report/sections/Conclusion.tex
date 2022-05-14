@@ -1,8 +1,17 @@
-\subsection{Chapter Overview}
-
 \subsection{Summary of Main Results}
 
+Using the metering data provided by CLEMAP, an energy consumption benchmark is established using a reporting period that represents the ``best operating conditions" for a piece of equipment and where the residuals fluctuate around a mean of zero. From there, using the posterior predictive distribution and SPC charts, the EE is monitored and analyzed to identify when a machine is deviating away from the expected behavior. Thus, not only is a probabilistic energy baseline model useful in benchmarking energy consumption, but it also provides value to the client in identifying a significant deviation in EE. As a proof of concept (PoC), an example was shown using the paper disposal machine. Using the methods proposed, the model and SPC charts identified a large decrease in energy consumption. When these charts were presented to the production leader and technician of CLEMAP's client, they had stated they were not too sure what could have caused such a significant decrease, but it could be related to the R707LV, XL106, or steel folding machine. Furthermore, when presented the time series plots, they were surprised that the machine was cycling over night, when in fact the machine should not be consuming energy.
+
+For proof of feasibility, it was determined that a batch setting was the most cost effective way of developing the models. In a batch setting, the entire dataset $D$ is available before training starts. Therefore, this allowed CLEMAP to give us a ``data dump" which doesn't incur additional costs for the company in the form of increased technical support and compute. However, it is possible with CLEMAP's application programming interface (API) to develop the model in an online setting, i.e., the data arrives sequentially in an unbounded stream. Though, this type of modeling is more demanding in regard to compute power, API requests, and technical skillsets—all resulting in additional costs for CLEMAP. Subsequently, with several models having been developed for the proposed machines, a docker container is created in preparation for deployment on CLEMAP's infrastructure. This container represents the \textit{inference} phase, and allows CLEMAP to incorporate and or develop this container into their production environment. 
+
 \subsection{Comparisons and Differences to Current Research and Work in Industry}
+
+In this thesis, methodologies currently in use in the industry were utilized and built on top of. Here, the comparisons and differences are outlined. Referring to \hyperlink{section.2}{Section 2}, additional data is often used to improve the quality of the model and to provide additional insights into the quantification of EE and PDD. Data is typically compiled through two forms: (1) additional sensors, and (2) non-sensor based. Per the meeting with CLEMAP's client on 12.05.2022, they have data on the week ahead production schedule and are interested in using this data—combined with the energy data—to produce productivity metrics. Likewise, this production data could be used as an input, in addition to the time input, in the GP to 
+improve the quality of the energy baseline model. In doing so, the forecasted energy consumption would also be correlated with the expected produced goods. In \cite{HIPE} \cite{boiler} \cite{gas-turbine-faults}, data related to harmonic oscillations was also collected and used to quantify its relationship with energy consumption and deviations in EE. 
+
+
+Differences: Longer time period for benchmark reporting period, most other research uses additional data, for condition monitoring some applications are online learning. Probabilistic models
+
 
 \subsection{Applicability of Methods and Research to Other Contexts Within Industry 4.0}
 

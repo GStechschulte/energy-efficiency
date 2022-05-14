@@ -41,11 +41,9 @@ Furthermore, when a change in EE is identified, the time, machine, actual value,
 \caption{Historical registry of paper disposal machine performance deviations. }
 \end{figure}
 
-
-
-
-
 \subsection{Mock Model Deployment}
+
+Per the experimentation workflow in \hyperlink{figure.12}{Figure 12}, the final step is to save the model's parameters (state) to a \path{.pth} file. Within this file is the full "raw" state of the learned GPyTorch model parameters. Saving this to a file allows one to simply load the model's state back into an ExactGP module and perform inference without any further training needed. To prepare the GPyTorch model for a prototype deployment in CLEMAP's environment and infrastructure, the focus will be on developing a docker container for the \textit{inference} phase. As \hyperlink{figure.18}{Figure 18} shows, this consists only of the ExactGP module, model state, and kernel and utilities.
 
 Docker + GitHub Actions
 
@@ -53,4 +51,6 @@ Docker + GitHub Actions
 
 \subsection{Assumptions and Limitations of Models}
 
-Mainly to do with the baseline reporting period. GP model complexity
+One of the assumptions of the models is the benchmark reporting period. Ideally, one should have a longer time period to analyze and to choose this period from. Indeed, most of the related work in \hyperlink{section.2}{Section 2} had access to several months of data. The work conducted in this thesis was meant to be an exploration / proof of feasibility, and therefore access to more data was limited. A longer time series allows for a wider range of production processes and periodicity's to be modeled than the current production week implemented in this thesis.
+
+A limitation of the current baseline model implementation is that it does not take into account other covariates or production processes. Rather, it is only an extrapolation based on the past. For example, a meeting with CLEMAP's client production leader on 12.05.2022 had stated the company plans the next week's production on the Thursday before. Therefore, there is the possibility to include the production as a covariate for some of the models. However, this information came too late in this thesis to incorporate. Furthermore, after speaking with the production leader, it is clear the production processes are complex and can vary from order to order. The heterogeneous production environment makes it false positives more likely when changing production environments are not taken into account.

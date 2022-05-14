@@ -6,12 +6,13 @@
 \usepackage{booktabs}
 \usepackage{listings}
 \usepackage{subfig}
+\usepackage[acronym]{glossaries}
 \setlength{\parskip}{1em}
 \setlength{\parindent}{0em}
 \usepackage{float}
 \usepackage{multirow}
-\renewcommand{\labelenumii}{\arabic{enumi}.\arabic{enumii}}
-\renewcommand{\labelenumiii}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}}
+%\renewcommand{\labelenumii}{\arabic{enumi}.\arabic{enumii}}
+%\renewcommand{\labelenumiii}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}}
 \renewcommand{\labelenumiv}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}.\arabic{enumiv}}
 \usepackage[
 backend=biber,
@@ -22,7 +23,7 @@ style=ieee,
 \usepackage{footnote}
 \usepackage{longtable}
 \usepackage{graphicx}
-\graphicspath{ {figures/} }
+\graphicspath{ {images/} }
 \usepackage[nottoc]{tocbibind}
 
 \addbibresource{main.bib}
@@ -31,10 +32,16 @@ style=ieee,
 
 \input{titlepage}
 
+\input{sections/Abstract}
+\pagebreak
+
 \tableofcontents
 \pagebreak
 \listoffigures
 \listoftables
+\pagebreak
+\input{sections/Abbreviations}
+\printglossary[type=\acronymtype]
 
 \pagebreak
 
@@ -66,11 +73,11 @@ style=ieee,
 \input{sections/Conclusion}
 \pagebreak
 
-
 \section{References}
 \printbibliography[heading=none]
 \pagebreak
 
+\input{sections/Affidavit}
 
 %\appendix
 %\section{Appendix A}
