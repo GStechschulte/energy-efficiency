@@ -25,7 +25,7 @@ def scoring_metrics(ground_truth, test_preds, lower_preds, upper_preds):
     print('\n', 'Scoring Metrics')
     print('-'*20)
     print('MSE       = ', round(mse, 4))
-    print('RMSE      = ', round(np.sqrt(mse)))
+    print('RMSE      = ', round(np.sqrt(mse), 4))
     print('MAPE      = ', round(mape, 4))
     print('ACE       = ', round(ace, 4))
     print('Pinball   = ', round(mean_pb_loss, 4))

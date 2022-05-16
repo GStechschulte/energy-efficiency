@@ -22,9 +22,10 @@ def get_config():
 
     config = configparser.ConfigParser()
 
-    config.read(os.path.join(
-        os.path.dirname(__file__), '../../config/config.ini')
-    )
+    BASE = os.path.dirname(os.path.dirname(__file__))
+    config.read(BASE + '/config/config.ini')
+    print(os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), '/config/config.ini'))
 
     return config
 
@@ -70,7 +71,6 @@ def query_table(table=None, add_params=None):
     """
 
     config = get_config()
-    print(config['DB']['SCHEMA'])
 
     if add_params is None:
         query = """
