@@ -6,6 +6,8 @@
 
 2.) Build image
 
+`docker build thesis-model .`
+
 3.) Run the container and model(s)
 
 `docker run -i thesis-model`
