@@ -1,16 +1,19 @@
 \documentclass[12pt, letterpaper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[margin=1in]{geometry}
+\usepackage{acronym} 
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{booktabs}
 \usepackage{listings}
 \usepackage{subfig}
-\usepackage[acronym]{glossaries}
+
 \setlength{\parskip}{1em}
 \setlength{\parindent}{0em}
 \usepackage{float}
 \usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
 %\renewcommand{\labelenumii}{\arabic{enumi}.\arabic{enumii}}
 %\renewcommand{\labelenumiii}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}}
 \renewcommand{\labelenumiv}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}.\arabic{enumiv}}
@@ -40,9 +43,15 @@ style=ieee,
 \listoffigures
 \listoftables
 \pagebreak
-\input{sections/Abbreviations}
-\printglossary[type=\acronymtype]
 
+\addcontentsline{toc}{section}{List of Data Sources}
+\section*{List of Data Sources}
+\input{sections/Data_Sources}
+\pagebreak
+
+\addcontentsline{toc}{section}{List of Abbreviations}
+\section*{List of Abbreviations}
+\input{sections/Abbreviations}
 \pagebreak
 
 \section{Introduction}
@@ -77,10 +86,11 @@ style=ieee,
 \printbibliography[heading=none]
 \pagebreak
 
-\input{sections/Affidavit}
+\appendix
+\section{Appendix}
+\input{sections/Appendix}
+\pagebreak
 
-%\appendix
-%\section{Appendix A}
-%\input{sections/Appendix}
+\input{sections/Affidavit}
 
 \end{document}
