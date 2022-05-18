@@ -3,9 +3,11 @@ from sklearn.metrics import mean_absolute_percentage_error, \
     mean_squared_error, mean_pinball_loss
 
 
-def scoring_metrics(ground_truth, test_preds, lower_preds, upper_preds):
+def scoring_metrics(ground_truth, test_preds, lower_preds, 
+upper_preds) -> np.array:
     """
-    
+    Compute the evaluation metrics on the inverse 
+    transformed test data
     """
 
     mean_pb_loss = mean_pinball_loss(ground_truth, test_preds)
@@ -19,8 +21,8 @@ def scoring_metrics(ground_truth, test_preds, lower_preds, upper_preds):
 
     ace = sum(indicator) / len(ground_truth)
 
-    mse = mean_squared_error(ground_truth.numpy(), test_preds.numpy())
-    mape = mean_absolute_percentage_error(ground_truth.numpy(), test_preds.numpy())
+    mse = mean_squared_error(ground_truth, test_preds)
+    mape = mean_absolute_percentage_error(ground_truth, test_preds)
 
     print('\n', 'Scoring Metrics')
     print('-'*20)

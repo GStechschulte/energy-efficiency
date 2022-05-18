@@ -28,6 +28,7 @@ class plot_results:
 
 
     def interpolation_extrapolation(self):
+        """GP model training + test data fit"""
         
         plt.figure(figsize=(16, 7))
 
@@ -53,15 +54,13 @@ class plot_results:
         plt.xlabel('Time', fontsize=14)
         plt.ylim(bottom=-0.1)
         plt.ylabel('kW', fontsize=14)
-        
-        #plt.title(
-        #    'Machine: {} \n Time Aggregation: {}'.format(
-        #        machine_name, time_aggregation))
-        
+        plt.savefig(
+            '{}_interpolation_extrapolation.png'.format(self.machine_name))        
         plt.show()
 
 
     def interpolation(self):
+        """In-sample fit of GP model"""
         
         plt.figure(figsize=(16, 7))
         
@@ -81,12 +80,7 @@ class plot_results:
 
         plt.xlabel('Time', fontsize=14)
         plt.ylim(bottom=-0.1)
-        plt.ylabel('kW', fontsize=14)
-        
-        #plt.title(
-        #    'Machine: {} \n Time Aggregation: {}'.format(
-        #        machine_name, time_aggregation))
-        
+        plt.ylabel('kW', fontsize=14)    
         plt.show()
 
 
@@ -110,7 +104,6 @@ class plot_results:
         """
 
         test_preds = self.mean_preds[self.n_train:]
-        #self.y_test = self.y_test
         test_upper = self.upper_preds[self.n_train:]
         test_lower = self.lower_preds[self.n_train:]
 
@@ -174,9 +167,9 @@ class plot_results:
 
 
     def load_forecast(self, time_aggregation=int):
+        """Next day (24hr) energy (kWh) forecast"""
 
         test_preds = self.mean_preds[self.n_train:]
-        #self.y_test = self.y_test
         test_upper = self.upper_preds[self.n_train:]
         test_lower = self.lower_preds[self.n_train:]
         
@@ -218,6 +211,9 @@ class plot_results:
         ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
             verticalalignment='top', bbox=props)
         
+        fig.savefig(
+            '{}_forecast.png'.format(self.machine_name))  
+        
         plt.show()
 
 
@@ -234,6 +230,8 @@ class plot_results:
         If truth < lower, then truth - lower = negative value
         """
 
+        ## Training SPC ##
+
         deviation = self.y_train - self.mean_preds[:self.n_train]
         deviation_upper = self.y_train - self.upper_preds[:self.n_train]
         deviation_lower = self.y_train - self.lower_preds[:self.n_train]
@@ -249,32 +247,32 @@ class plot_results:
         ax[0].set_title('Training Energy Performance Deviations')
         ax[0].set_ylabel('kW (difference in predicted vs. actual)')
         ax[0].legend(
-            ['Actual kW - Predicted kW', 'Upper and Lower Control Limit +/- $2 \sigma$']
+            ['Actual kW - Predicted kW', 
+            'Upper and Lower Control Limit +/- $2 \sigma$']
             )
 
         ax[1].scatter(self.X_train, np.cumsum(deviation), alpha=0.5)
         ax[1].plot(
             self.X_train, pd.Series(np.cumsum(deviation)).rolling(6).mean(), 
-            color='orange'
-            )
+            color='orange')
         ax[1].plot(
             self.X_train, pd.Series(np.cumsum(deviation)).rolling(60).mean(), 
-            color='green'
-            )
+            color='green')
         ax[1].set_title(
-            'Training Energy Performance Cumulative Deviations', size=14
-            )
+            'Training Energy Performance Cumulative Deviations', size=14)
         ax[1].set_ylabel(
-            'kW (Cumulative difference in predicted vs. actual)', size=14
-            )
+            'kW (Cumulative difference in predicted vs. actual)', size=14)
         ax[1].set_xlabel(
-            'Time (Month - Day - Hour)', size=14
-            )
+            'Time (Month - Day - Hour)', size=14)
         ax[1].legend(
-            ['1hr Moving Average', '6hr Moving Average', 'Cumulative Deviations']
-            )
+            ['1hr Moving Average', '6hr Moving Average', 'Cumulative Deviations'])
+        
+        fig.savefig(
+            '{}_training_spc.png'.format(self.machine_name))  
 
         plt.show()
+
+        ## Testing SPC ##
 
         test_deviation = self.y_test - self.mean_preds[self.n_train:]
         test_deviation_upper = self.y_test - self.upper_preds[self.n_train:]
@@ -287,18 +285,15 @@ class plot_results:
 
         ax[0].scatter(self.X_test, test_deviation, alpha=0.5)
         ax[0].scatter(
-            self.X_test[test_upper], test_deviation[test_upper], color='red'
-            )
+            self.X_test[test_upper], test_deviation[test_upper], color='red')
         ax[0].scatter(
-            self.X_test[test_lower], test_deviation[test_lower], color='red'
-            )
+            self.X_test[test_lower], test_deviation[test_lower], color='red')
         ax[0].set_title('Energy Performance Deviations', size=14)
         ax[0].set_ylabel('kW (difference in predicted vs. actual)', size=14)
         ax[0].legend([
-            'Actual kW - Predicted kW', 'Upper and Lower Control Limit +/- $2 \sigma$']
-            )
+            'Actual kW - Predicted kW', 
+            'Upper and Lower Control Limit +/- $2 \sigma$'])
 
-    
         ax[1].scatter(self.X_test, np.cumsum(test_deviation), alpha=0.5)
         ax[1].plot(
             self.X_test, pd.Series(np.cumsum(test_deviation)).rolling(6).mean(),
@@ -310,6 +305,9 @@ class plot_results:
             )
         ax[1].set_xlabel('Time (Month - Day - Hour)', size=14)
         ax[1].legend(['1hr Moving Average', 'Cumulative Deviations'])
+
+        fig.savefig(
+            '{}_testing_spc.png'.format(self.machine_name))  
         
         plt.show()
 
