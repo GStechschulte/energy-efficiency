@@ -246,10 +246,10 @@ n_train, upper_inv, lower_inv, test_y_inv, orig_time_test, orig_time):
 
     plt.axvline(x='2021-10-15 00:00', linestyle='--', color='black')
 
-    plt.xlabel('Time', fontsize=14)
+    plt.xlabel('Time (Year-Month-Day)', fontsize=14)
     plt.ylim(bottom=-0.1)
     plt.ylabel('kW', fontsize=14)
-    plt.title('$LocPer + RQ$')
+    plt.title('Gesamtmessung Interpolation and Extrapolation', fontsize=14)
     plt.show()
 
 
