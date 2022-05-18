@@ -66,7 +66,7 @@ For the sake of brevity, only the EDA for the paper disposal machine (Figure \re
 
 Building off of the bar plot visualizations above and the characteristics of time series in \hyperlink{subsection3.3}{Section 3.3}, it is likely that the paper disposal machine has a cyclical pattern. Figure \ref{fig:fig8} is an hourly load profile heat map of the paper disposal machine. It is evident there is a daily periodicity from Monday to Friday with little to no demand on the weekend. The heat map indicates a daily and potential weekly pattern; though more data is needed to confirm the weekly periodicity hypothesis. 
 
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
 \graphicspath{ {./images/} }
 \includegraphics[scale=0.55]{images/entsorgung_hourly_heatmap.png}
@@ -110,12 +110,10 @@ Finally, the original time series is split into random, shorter time samples to 
 \subsection{HIPE Industrial Energy}
 Complementing CLEMAP's client machine-level data, a second source of data, the \ac{HIPE} energy status data set \cite{HIPE}, will also be analyzed to ensure the scalability of the proposed methodologies in section 4. By developing the algorithms on a range of industrial equipment, the methods developed in this thesis can give vital feedback on the difficulties and opportunities of the scalability and feasibility of models built on specific data sets to new data of similar applications. 
 
-The HIPE data set comes from the \ac{IPE} of \ac{KIT} in Germany which operates an electronics production site. It produces electronic systems for particle physics, battery systems, and medical applications in small batches, i.e., less than 1,000 pieces. Several machines have been instrumented with smart meters in which the machines are either connected to one phase or three phase power. The machines and their purpose are as follows
+The HIPE data set comes from the \ac{IPE} of \ac{KIT} in Germany which operates an electronics production site. It produces electronic systems for particle physics, battery systems, and medical applications in small batches, i.e., less than 1,000 pieces. Several machines have been instrumented with smart meters in which the machines are either connected to one phase or three phase power. The machines and their purpose are outlined in Table \ref{tab:tab2} below.
 
-\subsection{HIPE Energy Open Dataset}
-
-\begin{table}[htbp]
-\scalebox{0.90}{
+\begin{table}[htp]
+\scalebox{0.95}{
     \renewcommand{\arraystretch}{1.2}
     \centering
     \begin{tabular}{p{5cm}p{11cm}}
