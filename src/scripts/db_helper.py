@@ -20,12 +20,13 @@ def get_config():
     if config is not None:
         return config
 
-    config = configparser.ConfigParser()
-
-    BASE = os.path.dirname(os.path.dirname(__file__))
-    config.read(BASE + '/config/config.ini')
-    print(os.path.join(
-        os.path.dirname(os.path.dirname(__file__)), '/config/config.ini'))
+    config = {
+        'HOST': 'gstech01-hs21.enterpriselab.ch',
+        'DATABASE': 'postgres',
+        'SCHEMA': 'sensors',
+        'USER': 'postgres',
+        'PASSWORD': 'energy_gassmann'
+        }
 
     return config
 
@@ -45,20 +46,20 @@ def get_db_connection(engine=False):
         config = get_config()
         engine = create_engine(
             'postgresql+psycopg2://{}:{}@{}/{}'.format(
-            config['DB']['USER'],
-            config['DB']['PASSWORD'],
-            config['DB']['HOST'],
-            config['DB']['DATABASE']
+            config['USER'],
+            config['PASSWORD'],
+            config['HOST'],
+            config['DATABASE']
             )
         )
         return engine
     else:
         config = get_config()
         conn = psycopg2.connect(
-            host=config['DB']['HOST'],
-            database=config['DB']['DATABASE'],
-            user=config['DB']['USER'],
-            password=config['DB']['PASSWORD']
+            host=config['HOST'],
+            database=config['DATABASE'],
+            user=config['USER'],
+            password=config['PASSWORD']
             )
         return conn
 
@@ -77,7 +78,7 @@ def query_table(table=None, add_params=None):
                 select
                     *
                 from {}."{}"
-        """.format(config['DB']['SCHEMA'], table)
+        """.format(config['SCHEMA'], table)
 
         df = pd.read_sql_query(
             query, get_db_connection(), index_col='t'
@@ -202,7 +203,7 @@ out_sample_mape, elapsed_time):
     """
 
     query = query.format(
-        schema=config['DB']['SCHEMA'],
+        schema=config['SCHEMA'],
         score_table=score_table,
         model=model,
         time_agg=time_agg,
