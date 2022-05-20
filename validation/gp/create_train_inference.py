@@ -111,7 +111,6 @@ def create_train_inference_gp(kernel_gen, train_x, train_y, test_x,
     #traced_model.save('traced_exact_gp.pt')
     #model.train()
     
-
     model.eval()
     likelihood.eval()
 
@@ -204,7 +203,7 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
             test_upper=upper_preds, test_truth=test_y_inv, test_time=orig_time_test)
 
         forecasted_consumption(
-            preds_mean=test_preds, test_time=orig_time_test, 
+            ground_truth=test_y_inv, preds_mean=test_preds, test_time=orig_time_test, 
             lower_inv=lower_inv[n_train:], upper_inv=upper_inv[n_train:])
     
     #model_state = machine_name + '_' + time_aggregation + '.pth'
@@ -249,7 +248,8 @@ n_train, upper_inv, lower_inv, test_y_inv, orig_time_test, orig_time):
     plt.xlabel('Time (Year-Month-Day)', fontsize=14)
     plt.ylim(bottom=-0.1)
     plt.ylabel('kW', fontsize=14)
-    plt.title('Gesamtmessung Interpolation and Extrapolation', fontsize=14)
+    plt.title(
+        '{} Interpolation and Extrapolation'.format(machine_name), fontsize=14)
     plt.show()
 
 
@@ -314,8 +314,6 @@ def performance_deviation_training(train_y_inv, observed_preds_inv, time, lower_
     """
 
     orig_time = np.array(time)
-
-    #ground_truth = np.concatenate([train_y_inv.numpy(), test_y_inv.numpy()])
     ground_truth = train_y_inv.numpy()
 
     # Upper
@@ -428,7 +426,7 @@ def performance_deviation_testing(test_y_inv, test_preds, test_time, test_lower,
     print(pdd_registry_testing_final)
 
 
-def forecasted_consumption(preds_mean, test_time, lower_inv, upper_inv):
+def forecasted_consumption(ground_truth, preds_mean, test_time, lower_inv, upper_inv):
     """
     Communicates the predicted electricity consumption for the next
     day with uncertainties
@@ -441,21 +439,19 @@ def forecasted_consumption(preds_mean, test_time, lower_inv, upper_inv):
 
     """
 
-    # Time of peak load
-
-    # Expected peak load value
-
-    # Duration of high energy consumption
-
     # Total kW expected to consume with +/-
     if time_aggregation == '30T':
+        # sample ratio is 30/60 --> 1/2 for 30T data
+        actual_total_energy = torch.sum(ground_truth*0.5).numpy()
         mean_total_energy = torch.sum(preds_mean*0.5).numpy()
         lower_total_energy = torch.sum(lower_inv*0.5).numpy()
         upper_total_energy = torch.sum(upper_inv*0.5).numpy()
     elif time_aggregation == '10T':
-        mean_total_energy = torch.sum(preds_mean*0.1).numpy()
-        lower_total_energy = torch.sum(lower_inv*0.1).numpy()
-        upper_total_energy = torch.sum(upper_inv*0.1).numpy()
+        sample_ratio = 1/6 ## to avoid floating point approximation
+        actual_total_energy = torch.sum(ground_truth*sample_ratio).numpy()
+        mean_total_energy = torch.sum(preds_mean*sample_ratio).numpy()
+        lower_total_energy = torch.sum(lower_inv*sample_ratio).numpy()
+        upper_total_energy = torch.sum(upper_inv*sample_ratio).numpy()
     else:
         raise ValueError('Code kWh conversion for lower time aggregation')
         
@@ -474,7 +470,8 @@ def forecasted_consumption(preds_mean, test_time, lower_inv, upper_inv):
     'kWh = Area Under the Curve',
     r'Upper kWh=%.2f' % (upper_total_energy, ),
     r'Average kWh=%.2f' % (mean_total_energy, ),
-    r'Lower kWh=%.2f' % (lower_total_energy, )))
+    r'Lower kWh=%.2f' % (lower_total_energy, ),
+    r'Actual kWh=%.2f' % (actual_total_energy,)))
 
     props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
@@ -528,8 +525,8 @@ test_preds, test_upper, test_lower, test_truth, test_time):
 
     ax[1].scatter(orig_time, cumsum_deviation, alpha=0.5)
 
-    ax[1].scatter(orig_time[cumsum_upper], cumsum_deviation[cumsum_upper], color='red')
-    ax[1].scatter(orig_time[cumsum_lower], cumsum_deviation[cumsum_lower], color='red')
+    #ax[1].scatter(orig_time[cumsum_upper], cumsum_deviation[cumsum_upper], color='red')
+    #ax[1].scatter(orig_time[cumsum_lower], cumsum_deviation[cumsum_lower], color='red')
 
     ax[1].plot(orig_time, pd.Series(np.cumsum(deviation)).rolling(6).mean(), color='orange')
     ax[1].plot(orig_time, pd.Series(np.cumsum(deviation)).rolling(60).mean(), color='green')
@@ -570,9 +567,7 @@ test_preds, test_upper, test_lower, test_truth, test_time):
     ax[0].legend([
         'Actual kW - Predicted kW', 'Upper and Lower Control Limit +/- $2 \sigma$'])
 
-   
     ax[1].scatter(test_time, test_cumsum_deviation, alpha=0.5)
-
 
     #ax[1].scatter(
     #    test_time[test_cumsum_upper], test_deviation[test_cumsum_upper], 
@@ -581,7 +576,6 @@ test_preds, test_upper, test_lower, test_truth, test_time):
     #    test_time[test_cumsum_lower], test_deviation[test_cumsum_lower], 
     #    color='red')
 
-        
     ax[1].plot(test_time, pd.Series(np.cumsum(test_deviation)).rolling(6).mean(), color='orange')
     ax[1].set_title('Energy Performance Cumulative Deviations', size=14)
     ax[1].set_ylabel('kW (Cumulative difference in predicted vs. actual)', size=14)
@@ -592,8 +586,6 @@ test_preds, test_upper, test_lower, test_truth, test_time):
 
   
 def probability_metrics(preds_mean, upper, lower, ground_truth):
-    """
-    """
 
     mean_pb_loss = mean_pinball_loss(ground_truth, preds_mean)
 
