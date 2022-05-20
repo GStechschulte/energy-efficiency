@@ -178,10 +178,11 @@ class plot_results:
             lower_total_energy = np.sum(test_lower*0.5)
             upper_total_energy = np.sum(test_upper*0.5)
         elif time_aggregation == 10:
-            actual_total_energy = np.sum(self.y_test*0.1)
-            mean_total_energy = np.sum(test_preds*0.1)
-            lower_total_energy = np.sum(test_lower*0.1)
-            upper_total_energy = np.sum(test_upper*0.1)
+            sample_ratio = 1/6
+            actual_total_energy = np.sum(self.y_test*sample_ratio)
+            mean_total_energy = np.sum(test_preds*sample_ratio)
+            lower_total_energy = np.sum(test_lower*sample_ratio)
+            upper_total_energy = np.sum(test_upper*sample_ratio)
         else:
             raise ValueError(
                 'Enter correct time aggregtion for kWh conversion'
