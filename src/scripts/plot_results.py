@@ -38,8 +38,6 @@ class plot_results:
             self.full_time, full_kw, s=[2.75], color='black')
         in_sample = plt.plot(
             self.X_train, self.mean_preds[:self.n_train], marker='.')
-        #testing = plt.scatter(
-        #    self.X_test, self.y_test, s=[2.75], color='black')
         out_sample = plt.plot(
             self.X_test, self.mean_preds[self.n_train:], marker='.')
         ci = plt.fill_between(
