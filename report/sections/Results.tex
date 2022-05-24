@@ -43,44 +43,44 @@ To illustrate the effect each kernel has on the composite kernel, the data is cu
 
 \subsection{Energy Baseline Model Experiment Performance Metrics}
 
-Following the kernel decomposition, the evaluation metrics are queried from the PostgreSQL database to determine which kernel design resulted in the best performance according to \hyperlink{subsection.3.7}{Section 3.7}. The result of this query is shown below.
+Following the kernel decomposition, the evaluation metrics and elapsed time (seconds to train) are queried from the PostgreSQL database to determine which kernel design resulted in the best performance according to \hyperlink{subsection.3.7}{Section 3.7}. The query results from modeling the industrial partner data set is shown below.
 
 \begin{table}[htbp]
-\scalebox{0.81}{
+\scalebox{0.72}{
     \renewcommand{\arraystretch}{1.2}
     \centering
-    \begin{tabular}{lcccccccc}
+    \begin{tabular}{lccccccccc}
     \hline
-         Device & Aggregation & Kernel & MSE & MAPE & RMSE & ACE & Pinball  \\
+         Device & Aggregation & Kernel & MSE & MAPE & RMSE & ACE & Pinball & Elapsed Time  \\
     \hline
     Paper disposal 
-     & $10$ & $K_{LocPer24} + K_{RQ}$ & $0.046$ & $0.117$ & $0.215$ & $0.99$ & $0.082$ \\
-     & $30$ & $K_{LocPer24} + K_{RQ}$ & $0.032$ & $0.079$ & $0.179$ & $1.0$ & $0.062$ \\
+     & $10$ & $K_{LocPer24} + K_{RQ}$ & $0.046$ & $0.117$ & $0.215$ & $0.99$ & $0.082$ & $6.23$ \\
+     & $30$ & $K_{LocPer24} + K_{RQ}$ & $0.032$ & $0.079$ & $0.179$ & $1.0$ & $0.062$ & $2.67$\\
      
     Main terminal 
-     & $10$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $169.354$ & $0.445$ & $13.014$ & $0.757$ & $4.913$ \\
-     & $30$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $163.175$ & $0.447$ & $12.774$ & $0.771$ & $4.806$ \\
+     & $10$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $169.354$ & $0.445$ & $13.014$ & $0.757$ & $4.913$ & $8.60$ \\
+     & $30$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $163.175$ & $0.447$ & $12.774$ & $0.771$ & $4.806$ & $2.96$ \\
      
     EG 
-     & $10$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.582$ & $0.117$ & $1.607$ & $0.80$ & $0.455$ \\
-     & $30$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.63$ & $0.115$ & $1.622$ & $0.792$ & $0.443$ \\
+     & $10$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.582$ & $0.117$ & $1.607$ & $0.80$ & $0.455$ & $11.08$ \\
+     & $30$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.63$ & $0.115$ & $1.622$ & $0.792$ & $0.443$ & $2.97$ \\
      
     HVAC 
-     & $10$ & $K_{LocPer24} + K_{RQ}$ & $0.462$ & $0.132$ & $0.68$ & $0.931$ & $0.171$ \\
-     & $30$ & $K_{LocPer24} + K_{RQ}$ & $0.287$ & $0.132$ & $0.536$ & $0.958$ & $0.173$ \\
+     & $10$ & $K_{LocPer24} + K_{RQ}$ & $0.462$ & $0.132$ & $0.68$ & $0.931$ & $0.171$ & $8.69$\\
+     & $30$ & $K_{LocPer24} + K_{RQ}$ & $0.287$ & $0.132$ & $0.536$ & $0.958$ & $0.173$ & $2.43$\\
      
     OG 1 
-     & $10$ & $K_{LocPer24} + K_{RQ}$ & $0.195$ & $0.178$ & $0.441$ & $0.965$ & $0.146$ \\
-     & $30$ & $K_{LocPer24} + K_{RQ}$ & $0.162$ & $0.155$ & $0.402$ & $0.912$ & $0.132$ \\
+     & $10$ & $K_{LocPer24} + K_{RQ}$ & $0.195$ & $0.178$ & $0.441$ & $0.965$ & $0.146$ & $8.84$\\
+     & $30$ & $K_{LocPer24} + K_{RQ}$ & $0.162$ & $0.155$ & $0.402$ & $0.912$ & $0.132$ & $2.47$\\
      
     UV EG 
-     & $10$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.599$ & $0.364$ & $1.612$ & $0.91$ & $0.457$ \\
-     & $30$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.068$ & $0.296$ & $1.438$ & $0.917$ & $0.378$ \\
+     & $10$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.599$ & $0.364$ & $1.612$ & $0.91$ & $0.457$ & $11.23$ \\
+     & $30$ & $K_{LocPer24} + K_{LocPer12} + K_{RQ}$ & $2.068$ & $0.296$ & $1.438$ & $0.917$ & $0.378$ & $2.97$ \\
      
     \hline
     \end{tabular}}
-    \caption{GP evaluation metrics for each machine and time aggregation. The learning rate was set to $0.1$, and the optimization loop consisted of $100$ iterations. The metrics in the table represent the lowest and or highest score achieved during the experimentation phase. For a full break of GP evaluation metrics, refer to the following table in the appendix.}
+    \caption{GP evaluation metrics for each machine and time aggregation. The learning rate was set to $0.1$, and the optimization loop consisted of $100$ iterations. The metrics in the table represent the lowest and or highest score achieved during the experimentation phase.}
     \label{tab:tab3}
 \end{table}
 
-As expected, time aggregations of $30$ minutes typically results in lower MSE, MAPE, RMSE and pinball loss, and a higher ACE. The paper disposal machine has the best evaluation metrics at both $10$ and $30$ minute aggregations with OG 1, HVAC, UV EG, and EG, following respectively. The evaluation metrics for the main terminal is an interesting example. Referring to Figure \ref{fig:fig18} in the appendix, the baseline model predicted a longer duration load profile than what actually happened. Thus, the reason for the poor evaluation metrics and in particular, Pinball loss. However, if more data was collected, it is likely possible the kernels will learn such a behavior.
+As can be seen, time aggregations of $30$ minutes typically results in lower MSE, MAPE, RMSE and pinball loss, and a higher ACE. Likewise, time aggregations of $30$ minutes takes less time to train than $10$ minute aggregations. This is due to the number of data points $n$ and the time complexity stated in \hyperlink{subsection.3.4}{Section 3.4}. Furthermore, when the kernel design is more complex (involves more kernels), the amount of seconds to train the model also increases. The paper disposal machine has the best evaluation metrics at both $10$ and $30$ minute aggregations with OG 1, HVAC, UV EG, and EG, following respectively. The evaluation metrics for the main terminal is an interesting example. Referring to Figure \ref{fig:fig18} in the appendix, the baseline model predicted a longer duration load profile than what actually happened. Thus, the reason for the poor evaluation metrics and in particular, Pinball loss. However, if more data was collected, it is likely possible the kernels will learn such a behavior.

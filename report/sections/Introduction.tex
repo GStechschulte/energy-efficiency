@@ -1,9 +1,9 @@
 \subsection{Motivation}
 
 \subsubsection{Industry Partner - CLEMAP}
-This thesis is in collaboration with \ac{CLEMAP}\footnote[1]{https://en.clemap.ch/}, a company offering energy metering sensors that have the ability to collect a range of information such as \ac{V}, \ac{I} in \ac{A} (40A to 6kA), active, reactive, and apparent power on each phase of a three phase load at a frequency up to 12\ac{Hz}. Complementing their hardware, CLEMAP also offers software products in the form of a data management platform and a software application to provide their customers with the energy data described above to act as a basis for analysis, and support and device management.
+This thesis is in collaboration with \ac{CLEMAP}\footnote[1]{https://en.clemap.ch/}, a company offering hardware in the form of energy metering sensors for a wide range of electrical appliances and equipment. Complementing their hardware, CLEMAP also offers software products in the form of a data management platform and a software application to provide their customers with the energy data described above to act as a basis for analysis, and support and device management.
 
-CLEMAP’s sensors belong to \ac{IoT}, an emerging technology consisting of sensors embedded in physical objects that are linked through wired and wireless networks (routers), often using the \ac{IP}, e.g. using an IP address. In Industry 4.0, these IoT devices are enhancing the metering and sub-metering capabilities of industrial equipment and production processes by collecting not only granular, multi-measurement historical data sets, but also streaming data not previously available for real-time analysis \cite{iot-1}.
+CLEMAP’s sensors belong to \ac{IoT}, an emerging technology consisting of sensors embedded in physical objects that are linked through wired and wireless networks (routers), often using the \ac{IP}, e.g. using an IP address. In Industry 4.0, these IoT devices are enhancing the metering and sub-metering capabilities of industrial equipment and production processes by collecting not only granular, multi-measurement historical data sets, but also streaming data not previously available for real-time analysis \cite{iot-1}. CLEMAP's meters have the ability to collect a range of information such as \ac{$V$}, \ac{$I$} in \ac{$A$} ($40$$A$ to $6$kA), active, reactive, and apparent power on each phase of a three phase load at a frequency up to $12$ \ac{$Hz$}. 
 
 With the advancements in sensor technology and increasing availability of large quantities of power-usage and energy consumption data from industrial equipment and commercial production, CLEMAP is looking to expand upon their portfolio of software based services, utilizing IoT, into \ac{EEE} based tools that analyze and monitor energy consumption and identify equipment or processes where energy is ``wasted" and or ``deviating" from their expected behavior.
 
@@ -26,15 +26,15 @@ In the Swiss industrial sector, large energy consuming and \ac{GHG} intensive co
 
 \subsection{Problem Statement}
 
-Per \hyperlink{subsection.1.2}{Section 1.2}, the development of an energy baseline model forms the foundation for monitoring machine EE and for identifying when a machine is deviating from nominal behavior. Using the measurement data from CLEMAP's smart energy meters, what time period being modeled constitutes as the ``best operating conditions" to act as a benchmark in which future values will be compared against? Secondly, referring to this benchmark, how can the energy baseline model be utilized to also detect deviations in machine performance?
+Per \hyperlink{subsection.1.2}{Section 1.2}, the development of an energy baseline model forms the foundation for monitoring machine energy efficiency and for identifying when a machine is deviating from nominal behavior. Using the measurement data from CLEMAP's smart energy meters, how can the energy baseline model be utilized to monitor energy efficiency over time and also detect deviations in machine performance?
 
 \subsection{Research Questions}
 
-The following questions, outlined in the preliminary study, will be answered throughout the thesis and ultimately summarized in \hyperlink{section.7}{Section 7}. 
+The following questions, outlined in the preliminary study, will be answered throughout the thesis and ultimately reflected on in \hyperlink{section.7}{Section 7}. 
 
 \begin{enumerate}
 
-    \item Smart energy meters only provide information in regard to inputs used by a piece of equipment and without access to "output" data from the sensors, how can a baseline EE or benchmark be estimated from energy data alone? Furthermore, how frequently should this benchmark be updated?
+    \item Smart energy meters only provide information in regard to inputs used by a piece of equipment and without access to ``output" data from the sensors, how can a baseline EE or benchmark be estimated from energy data alone? Furthermore, how frequently should this benchmark be updated?
     
     \item Could additional data be added or engineered to enhance the solution to research question one such as production data, financial information, temporal aggregations, maintenance logs or weather data?
     

@@ -34,7 +34,7 @@ The client of CLEMAP operates within the Swiss printing and media industry where
     \label{tab:tab1}
 \end{table}
 
-All machines and the main terminals are connected to an \ac{ac} grid with three phases. Subsequently, the data collected is the \ac{L}, V, I, W, \ac{PF}. The measurements were originally collected at a frequency of $12$ hertz (Hz) from October $7^{th}$ until October $18^{th}$ for a total length of $10$ days. A three phase current at $12$Hz indicates that every second, there should be $12$ cycles being measured for each phase $1, 2$ and $3$. 
+All machines and the main terminals are connected to an \ac{a.c} grid with three phases. Subsequently, the data collected is the \ac{L}, V, I, W, \ac{p.f.}. The measurements were originally collected at a frequency of $12$Hz from October $7^{th}$ until October $18^{th}$ for a total length of $10$ days. A three phase current at $12$Hz indicates that every second, there should be $12$ cycles being measured for each phase $1, 2$ and $3$. 
 
 As outlined in \hyperlink{subsection.3.3}{Section 3.3}, and due to the GPyTorch Gaussian Process time complexity of $\mathcal{O}(n^2)$, the time series is discretized by aggregating the data into $10$ and $30$ minute intervals and taking the average value. This aggregation significantly reduces the length of the original $12$Hz time series while still allowing for a more granular level of analysis compared to the current literature in \hyperlink{section.2}{Section 2}.
 
@@ -45,7 +45,7 @@ Here, an introductory EDA is performed on some of the machines and components th
 \begin{figure}[htp]
 \centering
 \graphicspath{ {./images/} }
-\includegraphics[scale=0.41]{images/hourly_load_barplot.png}
+\includegraphics[scale=0.47]{images/hourly_load_barplot.png}
 \caption{CLEMAP sensor measurement setup. Hourly load energy consumption (kWh) for each machine over the course of $10$ days.}
 \label{fig:fig6}
 \end{figure}
@@ -143,4 +143,4 @@ All machines and the main terminals are monitored using EEM-MA600 energy meters 
 
 The HIPE dataset was chosen because of various similarities such as the the form of energy being electrical, metering of three phase power, longer duration ($3$ months) and low time sampling ($5$ seconds), relatively similar load profiles for a subset of equipment, and similar measurements (V, I, W). 
 
-Where the data sets differ, are in regard to the load profiles of the following machines: chip press, pick and place unit, vacuum oven, screen printer and vacuum pump 2. The load profiles of these machines are either linearly increasing, constant, and or contain too little data for analysis. Therefore, for determining the applicability and feasibility of the models and methods, the following machines will utilized; vacuum pump 1, soldering oven, main terminal, high temp oven, chip saw, and washing machine.
+Where the data sets differ, are in regard to the load profiles of the following machines: chip press, pick and place unit, vacuum oven, screen printer and vacuum pump 2. The load profiles of these machines are either linearly increasing, constant, and or contain too little data for analysis. Therefore, for determining the applicability and feasibility of the models and methods, the following machines will be utilized; vacuum pump 1, soldering oven, main terminal, and high temperature oven.
