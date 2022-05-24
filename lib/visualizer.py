@@ -121,7 +121,8 @@ def hourly_profile_heatmap(machine):
     hourly_profile = machine_df.groupby(['day_name', 'hour'])['kw'].mean().unstack()
 
     plt.figure(figsize=(12, 8))
-    sns.heatmap(hourly_profile)
+    sns.heatmap(
+        hourly_profile, cbar_kws={'label': 'Average kW'})
     plt.ylabel('Day of Week', fontsize=14)
     plt.xlabel('Hour', fontsize=14)
     plt.title(machine + ' Hourly Load Heatmap')

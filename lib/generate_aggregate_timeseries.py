@@ -3,7 +3,6 @@ import pandas as pd
 import os
 from os.path import isfile, join
 from os import listdir
-import db_config as config
 from sqlalchemy import create_engine
 import psycopg2
 from lib.util import helper
