@@ -137,7 +137,9 @@ The HIPE data set comes from the \ac{IPE} of \ac{KIT} in Germany which operates 
     \label{tab:tab2}
 \end{table}
 
-All machines and the main terminals are monitored using EEM-MA600 energy meters and are connected to an ac-grid with three phases. The measurements are a three month time series of various electrical quantities, e.g., PF and \ac{VAR}, V, frequency, and harmonic distortion at a five second resolution. As the goal is to evaluate the scalability and feasibility of the methods introduced in \hyperlink{section.2}{Section 2} and \hyperlink{section.3}{Section 3}, the EDA on the HIPE data is similar to that of the CLEMAP client dataset. Therefore, refer to the \path{hipe load profiles} directory within the \path{eda} directory on the  \path{experiments} branch in the GitHub repository \cite{Stechschulte_Gaussian_Processes_for_2022}. 
+All machines and the main terminals are monitored using EEM-MA600 energy meters and are connected to an ac-grid with three phases. The main measurements of interest are a three month time series at a five second resolution of the electrical quantities: $V$, $I$, $A$, PF, and \ac{VAR}. Additionally, data related to harmonic distortions was also collected and can be used to quantify its relationship with energy consumption. A power system’s ability to perform at optimal levels is compromised when harmonic distortion enters the system. It creates inefficiencies in equipment operations due to the increased need for power consumption \cite{noauthor_harmonic_2021}. 
+
+As the goal is to evaluate the scalability and feasibility of the methods introduced in \hyperlink{section.2}{Section 2} and \hyperlink{section.3}{Section 3}, the EDA on the HIPE data is similar to that of the CLEMAP dataset. Therefore, refer to the \path{hipe load profiles} directory within the \path{eda} directory on the  \path{experiments} branch in the GitHub repository \cite{Stechschulte_Gaussian_Processes_for_2022}. 
 
 \subsection{Similarity and Differences of Data Sources}
 

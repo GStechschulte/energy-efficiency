@@ -11,11 +11,11 @@ With the advancements in sensor technology and increasing availability of large 
 
 First and foremost, what is \ac{EE}? The terminology of EE is broad and definitions can differ from organization to organization and by economic sectors. The \ac{ISO} defines energy efficiency as a ``ratio or other quantitative relationship between an output of performance, service, goods or energy, and an input of energy" \cite{ISO} while the \ac{IEA} and the \ac{WEC} defines energy efficiency as a ``reduction in the energy input of a given service or level of economic activity" \cite{iea-wec}. In the ISO definition, EE is a quantitative measure between an output and input \textit{as is}. Subsequently, the IEA and WEC defines EE as a quantitative measure \textit{given} a reduction in the energy input.
 
-In both of the organization definitions stated above, EE involves analyzing inputs and outputs which can be difficult in practice as it is not always clear what is defined or measured as an output. As well, IoT sensors are measuring only the device it was intended to measure. Thus, only logging measurements in regard to the inputs the physical device consumes. In this thesis, EE is defined as the amount of energy the equipment or production process consumes \textit{as is} for a given time period. It is important to note that in this work, the output of a machine is unknown.  
+In the organization definitions stated above, EE involves analyzing inputs and outputs which can be difficult in practice as it is not always clear what is defined or measured as an output. As well, smart meters are only logging the energy inputs that the physical device consumes. In this thesis, EE is defined as the amount of energy the equipment or production process consumes \textit{as is} for a given time period with respect to a baseline. It is important to note that in this work, the output of a machine is unknown.  
 
 Energy managers cite a number of benefits attributable to energy metering and monitoring. Fundamentally, they stem from the “you cannot manage what you do not measure” adage \cite{3M}. Building off of this adage, in regard to industry 4.0 and CLEMAP's ambitions, the motivation is to develop an energy consumption baseline for a subset of machines being monitored by CLEMAP's sensors. Being able to accurately model the underlying physical process of a machine is critical to assessing EE and productivity metrics. The development of a model prior to any energy intervention project, new production process or machine components is called an energy baseline model as it establishes an energy consumption baseline / benchmark \textit{as is}. 
 
-With the energy baseline model, at a certain time point, a machine's energy consumption is predicted and then compared to the actual value when the machine is measured at that time step. The difference between the prediction and actual value can be monitored and analyzed over time. Thus, creating value add in assuring the machines that are in production do not cause excessive negative externalities, high operating costs \cite{eea}, and are operating nominally. Additionally, a well established benchmark can help companies measure and improve their performance not only within the organization, but also to compare with benchmarks established by similar firms in their industry.
+With the energy baseline model, at a certain time point, a machine's energy consumption is predicted and then compared to the actual measured value. The difference between the prediction and actual value can be monitored and analyzed over time. Thus, creating value add in assuring the machines that are in production do not cause excessive negative externalities such as high operating costs \cite{eea}, and are operating nominally. Additionally, a well established benchmark can help companies measure and improve their performance not only within the organization, but also to compare with benchmarks established by similar firms in their industry.
 
 \subsubsection{Machine Performance Deviation}
 
@@ -26,7 +26,7 @@ In the Swiss industrial sector, large energy consuming and \ac{GHG} intensive co
 
 \subsection{Problem Statement}
 
-Per \hyperlink{subsection.1.2}{Section 1.2}, the development of an energy baseline model forms the foundation for monitoring machine energy efficiency and for identifying when a machine is deviating from nominal behavior. Using the measurement data from CLEMAP's smart energy meters, how can the energy baseline model be utilized to monitor energy efficiency over time and also detect deviations in machine performance?
+Per \hyperlink{subsection.1.2}{Section 1.2}, the development of an energy baseline model forms the foundation for monitoring machine energy efficiency and for identifying when a machine is deviating from nominal behavior. Using data measured with CLEMAP's smart energy meters, how can an energy baseline model be utilized to monitor energy efficiency over time and also detect deviations in machine performance?
 
 \subsection{Research Questions}
 
@@ -38,7 +38,7 @@ The following questions, outlined in the preliminary study, will be answered thr
     
     \item Could additional data be added or engineered to enhance the solution to research question one such as production data, financial information, temporal aggregations, maintenance logs or weather data?
     
-    \item What parameter learning architecture and tools are best suited for deploying the EEE and PDD models on streaming data?
+    \item What architecture and tools are best suited for deploying the EEE and PDD models on streaming data?
     
     \item What cloud services and or open-source libraries are needed to productively and cost-effectively deploy the developed EEE and PDD model into production? 
     
@@ -52,18 +52,22 @@ The following questions, outlined in the preliminary study, will be answered thr
     
 \end{enumerate}
 
-\subsection{Project Scope}
+\subsection{Project Tasks}
 
-The scope of the project consists of the following main objectives:
+To address the problem statement and research questions stated above, the following main tasks are outlined:
 
 \begin{itemize}
-    \item Identify machines being metered by CLEMAP where an energy baseline model can be applied.
-    \item With the given data, perform a series of experiments to model those machines using a hypothetical reporting period and perform predictions one day ahead.
-    \item Assess the quality of the model and select the best performing one according to a set of evaluation metrics—this model is then the energy baseline model
-    \item Use \ac{SPC} charts to monitor EE over time and to visualize / detect periods of deviations in performance. 
+    \item Identify equipment being metered by CLEMAP where an energy baseline model can be applied.
+    
+    \item With the measurement data, perform a series of experiments to model the equipment from the bullet point above, using a hypothetical reporting period and perform predictions one day ahead.
+    
+    \item Assess the quality of the model using deterministic and probabilistic evaluation metrics and select the best performing model according to those metrics—this model is then the energy baseline model.
+    
+    \item Use \ac{SPC} charts to monitor EE over time, and to visualize and detect periods of deviations in performance. 
+    
     \item To prepare for a prototype deployment on CLEMAP's infrastructure and environment, create a docker container of the trained energy baseline models.
 \end{itemize}
 
 \subsection{Organization of Thesis}
 
-With the introduction, motivation, problem statement, and research questions now set, the remainder of the thesis is organized as follows: first, an overview and application of methods pertaining to EEE and PDD in industry is given. Next, building off of the related work, the methodology used in this thesis is presented along with the evaluation metrics to assess the quality of the model. Furthermore, advantages and disadvantages of the proposed methodology is given. Then, in \hyperlink{section.4}{Section 4}, the two data sets are introduced where an example of an \ac{EDA} workflow is given for a particular machine within the CLEMAP client data set. Also, the similarity and differences between the open source and CLEMAP data is given. With the data set and proposed methodology now given, the results and a decomposition of the energy baseline model is described. Subsequently, in \hyperlink{section.6}{Section 6}, how to monitor EE and perform PDD using the energy baseline model is given. Lastly, a summary of the main results, answers to the research questions, and comparison and next steps of the current research is outlined.
+With the introduction, motivation, problem statement, and research questions now set, the remainder of the thesis is organized as follows: \hyperlink{section.2}{Section 2} gives an overview and application of methods pertaining to EEE and PDD in industry. In \hyperlink{section.3}{Section 3}, building off of the related work, the methodology used in this thesis is presented along with the evaluation metrics to assess the quality of the model. Furthermore, advantages and disadvantages of the proposed methodology are given in \hyperlink{subsection.3.4}{Section 3.4}. Then, in \hyperlink{section.4}{Section 4}, two data sets are introduced where an example of an \ac{EDA} workflow is given for a particular machine within the CLEMAP data set. Also, the similarity and differences between the open source and CLEMAP data is given. With the data set and proposed methodology now given, \hyperlink{section.5}{Section 5} contains results and a decomposition of the energy baseline model is described. Subsequently, in \hyperlink{section.6}{Section 6}, monitoring EE and performing PDD using the energy baseline model is explained using a paper disposal machine. Lastly, \hyperlink{section.7}{Section 7}, provides a summary of the main results, answers to the research questions, and comparison and next steps of the current research is outlined.
