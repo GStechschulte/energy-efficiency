@@ -1,6 +1,6 @@
 \subsection{CLEMAP Client Dataset}
 
-The client of CLEMAP operates within the Swiss printing and media industry where the equipment has been fitted with state of the art CLEMAP sensors on a range of their production equipment. The machines, location, and purpose are described in Table 1:
+The client of CLEMAP operates within the Swiss printing and media industry where the equipment has been fitted with state of the art CLEMAP sensors on a range of their production equipment. The machines, location, and purpose are described in Table \ref{tab:tab1}:
 
 \begin{table}[htbp]
 \scalebox{0.90}{
@@ -13,13 +13,13 @@ The client of CLEMAP operates within the Swiss printing and media industry where
     Gesamtmessung & & 1600 & Bau II & 0 & Main terminal \\
     Hauptluftung & HVAC & 250 & Bau II & -1 & Main ventilation \\
     Kältemaschiene & & 200 & Bau II & 1 & Refrigeration \\
-    Drückmaschine & XL106 & 315 & Bau II & 2 & Printer \\
-    UV Scan & XL106 & 160 & Bau II & 1 & undefined \\
+    Printer (Drückmaschine) & XL106 & 315 & Bau II & 2 & Heidelberg Speedmaster printer \\
+    UV Scan & XL106 & 160 & Bau II & 1 & UV scan on XL106 \\
     UV Sigmaline EG & & 315 & Bau II & 0 & undefined \\
     Stahl Folder & & 63 & Bau II & 0 & Steel folding \\
-    Printer (Druckmaschine) & R707LV & 160 & Bau II & 2 & Printer \\
+    Printer (Drückmaschine) & R707LV & 160 & Bau II & 2 & Manroland printer \\
     Puderabsauger & R707LV & 25 & Bau II & 2 & Powder extraction \\
-    Vari Air & R707LV & 100 & Bau II & 2 & undefined \\
+    Vari Air & R707LV & 100 & Bau II & 2 & Printer variational air \\
     Trockner & R707LV & 160 & Bau II & 2 & Dryer \\
     UV Feinabgäng & & 125 & Bau II & 0 & UV fine particle extractor \\
     Papier Entsorgung & & 125 & Bau II & -1 & Paper disposal \\
@@ -34,7 +34,7 @@ The client of CLEMAP operates within the Swiss printing and media industry where
     \label{tab:tab1}
 \end{table}
 
-All machines and the main terminals are connected to an \ac{a.c} grid with three phases. Subsequently, the data collected is the \ac{L}, V, I, W, \ac{p.f.}. The measurements were originally collected at a frequency of $12$Hz from October $7^{th}$ until October $18^{th}$ for a total length of $10$ days. A three phase current at $12$Hz indicates that every second, there should be $12$ cycles being measured for each phase $1, 2$ and $3$. 
+All machines and the main terminals are connected to an \ac{a.c} grid with three phases. Subsequently, the data collected is: $V$, $I$, $W$, $P$, $Q$, $PF$, and $S$ on each phase of the three phase load. The measurements were originally collected at a frequency of $12$Hz from October $7^{th}$ until October $18^{th}$ for a total length of $10$ days. A three phase current at $12$Hz indicates that every second, there should be $12$ cycles being measured for each phase $1, 2$ and $3$. 
 
 As outlined in \hyperlink{subsection.3.3}{Section 3.3}, and due to the GPyTorch Gaussian Process time complexity of $\mathcal{O}(n^2)$, the time series is discretized by aggregating the data into $10$ and $30$ minute intervals and taking the average value. This aggregation significantly reduces the length of the original $12$Hz time series while still allowing for a more granular level of analysis compared to the current literature in \hyperlink{section.2}{Section 2}.
 
@@ -50,7 +50,7 @@ Here, an introductory EDA is performed on some of the machines and components th
 \label{fig:fig6}
 \end{figure}
 
-Using the meta data from Table \ref{tab:tab1} and the bar chart above, it is evident that machines on the ground, first, and second floor affect the energy being metered on their respective floors (UV 1.0G, etc.). Likewise, the meter on the main terminal is measuring all of the energy. The majority of the components being metered, with the exception of the Trockner, UV Sigmaline EG and VK 1.UG, are effected by the hour of the day. In the system R707LV, the printer demanded little to no energy, while the remaining three components represent a large share of total energy demanded with the powder extraction machine consuming the most. Subsequently, in the XL106 system, the printer represents the majority of energy demanded by the system. 
+Using the meta data from Table \ref{tab:tab1} and the bar chart above, it is evident that machines on the ground, first, and second floor affect the energy being metered on their respective floors (UV 1.0G, etc.). Likewise, the meter on the main terminal is measuring all of the energy. The majority of the components being metered, with the exception of the Trockner, UV Sigmaline EG and VK 1.UG, are effected by the hour of the day. In the system R707LV, the Manroland printer demanded little to no energy, while the remaining three components represent a large share of total energy demanded with the powder extraction machine consuming the most. Subsequently, in the XL106 system, the Heidelberg printer represents the majority of energy demanded by the system. 
 
 For the sake of brevity, only the EDA for the paper disposal machine (Figure \ref{fig:fig7}) will be shown below. For a full machine analysis, please refer to the \path{eda} directory on the \path{experiments} branch of the GitHub repository \cite{Stechschulte_Gaussian_Processes_for_2022}. 
 
@@ -137,12 +137,12 @@ The HIPE data set comes from the \ac{IPE} of \ac{KIT} in Germany which operates 
     \label{tab:tab2}
 \end{table}
 
-All machines and the main terminals are monitored using EEM-MA600 energy meters and are connected to an ac-grid with three phases. The main measurements of interest are a three month time series at a five second resolution of the electrical quantities: $V$, $I$, $A$, PF, and \ac{VAR}. Additionally, data related to harmonic distortions was also collected and can be used to quantify its relationship with energy consumption. A power system’s ability to perform at optimal levels is compromised when harmonic distortion enters the system. It creates inefficiencies in equipment operations due to the increased need for power consumption \cite{noauthor_harmonic_2021}. 
+All machines and the main terminals are monitored using EEM-MA600 energy meters and are connected to an ac-grid with three phases. The main measurements of interest are a three month time series at a five second resolution of the electrical quantities: $V$, $I$, $A$, $PF$, $S$, and $Q$. Additionally, data related to harmonic distortions was also collected and can be used to quantify its relationship with energy consumption. A power system’s ability to perform at optimal levels is compromised when harmonic distortion enters the system. It creates inefficiencies in equipment operations due to the increased need for power consumption \cite{noauthor_harmonic_2021}. 
 
 As the goal is to evaluate the scalability and feasibility of the methods introduced in \hyperlink{section.2}{Section 2} and \hyperlink{section.3}{Section 3}, the EDA on the HIPE data is similar to that of the CLEMAP dataset. Therefore, refer to the \path{hipe load profiles} directory within the \path{eda} directory on the  \path{experiments} branch in the GitHub repository \cite{Stechschulte_Gaussian_Processes_for_2022}. 
 
 \subsection{Similarity and Differences of Data Sources}
 
-The HIPE dataset was chosen because of various similarities such as the the form of energy being electrical, metering of three phase power, longer duration ($3$ months) and low time sampling ($5$ seconds), relatively similar load profiles for a subset of equipment, and similar measurements (V, I, W). 
+The HIPE dataset was chosen because of various similarities such as the the form of energy being electrical, metering of three phase power, longer duration ($3$ months) and low time sampling ($5$ seconds), relatively similar load profiles for a subset of equipment, and similar eletrical measurements. 
 
-Where the data sets differ, are in regard to the load profiles of the following machines: chip press, pick and place unit, vacuum oven, screen printer and vacuum pump 2. The load profiles of these machines are either linearly increasing, constant, and or contain too little data for analysis. Therefore, for determining the applicability and feasibility of the models and methods, the following machines will be utilized; vacuum pump 1, soldering oven, main terminal, and high temperature oven.
+Where the data sets differ, are in regard to the load profiles of the following machines: chip press, pick and place unit, high temperature oven, vacuum oven, screen printer and vacuum pump 2. The load profiles of these machines are either linearly increasing, constant, and or contain too little data for analysis. Therefore, for determining the applicability and feasibility of the models and methods, the following machines will be utilized; vacuum pump 1, soldering oven, and main terminal.
