@@ -124,7 +124,6 @@ plt.tight_layout()
 #plt.savefig("../figs/"+machine+"_hampel_zoom1.png", dpi=600)
 #plt.savefig("../figs/"+machine+"_hampel_zoom2.png", dpi=600)
 
-
 """ Recursive MAD """
 _outWm = out0.resample(Wm).sum()
 hi = np.nanquantile(_outWm, thr_q) 

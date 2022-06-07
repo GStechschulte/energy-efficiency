@@ -57,10 +57,8 @@ clu1 = setup(data, session_id=123, log_experiment=True, log_plots = True,
              experiment_name='test_1',
              normalize=flg_norm, ignore_features=["P"])
 
-
 models() # Create model
 kmeans = create_model('kmeans', num_clusters = N_cl)
-
 kmeans_results = assign_model(kmeans) # Assign Labels
 kmeans_results.head()
 
