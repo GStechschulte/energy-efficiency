@@ -127,7 +127,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 db_config.py
-config/
+config/config.ini
+config_old/
 .DS_Store
 __pycache__
 user_access.sql

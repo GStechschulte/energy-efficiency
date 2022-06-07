@@ -1,12 +1,37 @@
 # Energy-Efficiency-Thesis
 
-Code, works in progress, and supplemental information related to my master's thesis
+## Reproduce the results
 
-## Directories
+![entsorgung_gp](./img/LocPer_RQ_entsorgung.png)
+![entsorgung_spc](./img/entsorgung_test_SPC.png)
+![entsorgung_spc](./img/entsorgung_deviation.png)
 
-[clemap_api](clemap_api/) - Notebook for authenticating a new user
+**Method 1**
 
-[data_loader](data_loader/) - Python script for loading all the machine data into PostgreSQL
+1.) Clone the repo and `cd` into the root directory
 
-[EDA](EDA/) - Contains visualizations of load profiles broken down by machine, day, and hour
+2.) Build image
 
+`docker build thesis-model .`
+
+3.) Run the container and model(s)
+
+`docker run -i thesis-model`
+
+**Method 2**
+
+1.) Pull the image from Docker Hub (contact author for access to private Docker Hub )
+
+`docker pull [OPTIONS] NAME[:TAG|@DIGEST]`
+
+
+### Available Data
+
+You will be asked to enter a machine and the time aggregation you would like to analyze. Available time sampling is `10` and `30` minutes. The following devices have energy baseline models ready for inference:
+
+- Entsorgung
+- Hauptluftung
+- Gesamtmessung
+- UV EG
+- UV OG
+- EG

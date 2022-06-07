@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Stechschulte
+    given-names: Gabriel
+    orcid: https://orcid.org/0000-0003-4925-7248
+title: "Gaussian Processes for Industrial Equipment Energy Efficiency Estimation and Performance Deviation Detection"
+version: 1.0,
+url: "https://github.com/GStechschulte/energy-efficiency"
+date-released: 2022-05-01
