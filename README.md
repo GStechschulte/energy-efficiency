@@ -3,7 +3,7 @@
 ## Reproduce the results
 
 ![entsorgung_gp](./img/LocPer_RQ_entsorgung.png)
-![entsorgung_spc](./img/entsorgung_test_SPC.png)
+![entsorgung_spc](./img/entsorgung_baseline_SPC.png)
 ![entsorgung_spc](./img/entsorgung_deviation.png)
 
 **Method 1**
