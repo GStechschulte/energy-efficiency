@@ -1,8 +1,8 @@
-# Energy-Efficiency-Thesis
+# Estimation of energy efficiency and condition monitoring #
 
-Code, works in progress, and supplemental information related to my Gabriel Stechschult's master thesis "" and research performed in the context of the innovation project "". 
+Code, works in progress, and supplemental information related to my Gabriel Stechschulte's master thesis "" and research performed in the context of the innovation project "". 
 
-## Directories
+## Directories ##
 
 [clemap_api](clemap_api/) - Notebook for authenticating a new user
 
@@ -37,4 +37,14 @@ Code, works in progress, and supplemental information related to my Gabriel Stec
 [src](src/) - ...
 
 [validation](validation/) - ...
+
+## Branches ##
+
+* `main`: contains a tutorial to reproduce the prediction results based on a docker container 
+
+* `experiments`: contains also work done in the context of the innosuisse project, it is the main "working" branch 
+
+* `models` contains GAM and GP validation notebooks
+
+* `load_profiles`, `temporal` are old versions of `experiments`
 
