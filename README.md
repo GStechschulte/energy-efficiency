@@ -1,8 +1,11 @@
 # Estimation of energy efficiency and condition monitoring #
 
-Code, works in progress, and supplemental information related to my Gabriel Stechschulte's master thesis "" and research performed in the context of the innovation project "". 
+## Background and objectives ##
 
-## Directories ##
+## About this repository ##
+Code, works in progress, and supplemental information related to Gabriel Stechschulte's master thesis "" and research performed in the context of the innovation project. 
+
+### Directories ###
 
 [clemap_api](clemap_api/) - Notebook for authenticating a new user
 
@@ -38,7 +41,7 @@ Code, works in progress, and supplemental information related to my Gabriel Stec
 
 [validation](validation/) - ...
 
-## Branches ##
+### Branches ###
 
 * `main`: contains a tutorial to reproduce the prediction results based on a docker container 
 
