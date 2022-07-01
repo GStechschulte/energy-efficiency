@@ -1,9 +1,11 @@
 # Estimation of energy efficiency and condition monitoring #
 
+We conducted a preliminary study, *"Condition monitoring and energy efficiency tools from smart (sub-)meters"*, to gauge the potential of condition monitoring and energy efficiency digital services based mainly on electricity consumption data. Thus, we tested methods that could be used as the basis to build estimation tools with a particular focus on industrial sites and factory equipment (industry 4.0). 
+
 ## Background and objectives ##
 
 ## About this repository ##
-Code, works in progress, and supplemental information related to Gabriel Stechschulte's master thesis "" and research performed in the context of the innovation project. 
+Code, works in progress, and supplemental information related to Gabriel Stechschulte's master thesis *"Industrial Equipment Energy Efficiency Estimation and Performance Deviation Detection Using IoT Enabled Energy Metering"* and research performed in the context of the innovation project. 
 
 ### Directories ###
 
