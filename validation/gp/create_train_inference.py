@@ -4,6 +4,7 @@ from validation.gp.exact_gp import ExactGPModel
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
 from lib.util import helper
+from lib.util import data_preprocessing
 import time
 import json
 import numpy as np
@@ -83,9 +84,20 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
     model.eval()
     likelihood.eval()
 
+    # Scale data back to original
+    #train_x, train_y, test_x, test_y = data_preprocessing.gp_inverse_transform
+    #train_y, test_y, y_train_std, y_train_mean= data_preprocessing.gp_inverse_transform(
+    #    train_x, train_y, test_x, test_y
+    #    )
+
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         
         observed_preds = likelihood(model(test_x))
+        
+        # Scale data back 
+        #observed_preds.mean *= y_train_std
+        #observed_preds.mean -= y_train_mean
+
         test_preds = observed_preds.mean[n_train:]
         test_x_sub = test_x[n_train:]
 
@@ -94,13 +106,17 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
 
         f, ax = plt.subplots(figsize=(16, 7))
         lower, upper = observed_preds.confidence_region()
+
         ax.plot(train_x.numpy(), train_y.numpy())
         ax.plot(test_x.numpy(), observed_preds.mean.numpy())
         ax.plot(test_x_sub.numpy(), test_y.numpy(), color='red')
+
         ax.fill_between(
             test_x.numpy(), lower.numpy(), upper.numpy(), alpha=0.5, color='#2ecc71'
             )
-        plt.axvline(x=np.min(test_x_sub.numpy()), linestyle='--', color='black', lw=1)
+
+        #plt.axvline(x=np.min(test_x_sub.numpy()), linestyle='--', color='black', lw=1)
+
         ax.legend([
             'Observed Data', 'Predictions', 'Test Truth', 'Train/Test Split', 'Uncertainty'
             ])
@@ -110,5 +126,10 @@ def posterior_inference(train_x, train_y, test_x, test_y, model, likelihood, n_t
             'Gaussian Process Regression: Interpolation and Extrapolation'
             )
         plt.show()
+
+        ground_truth = np.concatenate([train_y.numpy(), test_y.numpy()])
+        out_of_conf_idx = np.array(np.where(ground_truth > upper.numpy())).flatten()
+        print('Points outside of confidence region:', ground_truth[out_of_conf_idx])
+        
     
     return mse, mape
