@@ -53,3 +53,29 @@ Code, works in progress, and supplemental information related to Gabriel Stechsc
 
 * `load_profiles`, `temporal` are old versions of `experiments`
 
+
+## Data access ##
+
+### dalcowks ###
+Mount drive where data is stored
+
+```
+gio mount smb://fs01e.eee.intern/data$/22\ TES/Datenaustausch_clemap/
+```
+
+user your credentials for the `eee` drives, e.g.
+
+```
+User [tabaraho]: eee-tabaraho
+Domain [WORKGROUP]: eee
+Password: [use-key-chain]
+```
+
+Other shared drives: `smb://fs01/data$/x_transfer`, `smb://fs02.campus.intern/home$/ta/tabaraho`
+
+Once mounted, data folders is accesible:
+
+```
+ls /run/user/1005/gvfs/smb-share:server=fs01e.eee.intern,share=data$/22\ TES/Datenaustausch\_clemap/data
+```
+

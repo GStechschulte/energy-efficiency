@@ -16,7 +16,7 @@ os.chdir(home)
 
 # load data file provided by Gino
 ddir = "../data/20210808-v0.0.1_SE05000139_Kaeltemaschine" # data directory
- 
+
 # print(glob.glob(ddir + os.sep + "*.txt"))
 fns = glob.glob(ddir + os.sep + "*.csv")
 
